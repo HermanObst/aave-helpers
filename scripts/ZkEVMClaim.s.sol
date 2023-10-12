@@ -21,7 +21,7 @@ interface ZkEVMBridge {
 contract ClaimZkEVMMessage is Script {
   address constant ZK_EVM_BRIDGE = 0xF6BEEeBB578e214CA9E23B0e9683454Ff88Ed2A7;
 
-  address constant ORIGIN = 0xa51fae70F549e7beb0A7Da75b1656A14584E6522;
+  address constant DESTINATION = 0x72F460dA1f429391D2228369dB653E1441780810;
 
   function getProof()
     internal
@@ -41,7 +41,7 @@ contract ClaimZkEVMMessage is Script {
     string[] memory inputs = new string[](3);
     inputs[0] = 'node';
     inputs[1] = 'fetch.js';
-    inputs[2] = vm.toString(ORIGIN);
+    inputs[2] = vm.toString(DESTINATION);
     bytes memory response = vm.ffi(inputs);
     return
       abi.decode(
