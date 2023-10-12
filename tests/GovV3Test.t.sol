@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import 'forge-std/Test.sol';
 import {IVotingMachineWithProofs, GovV3Helpers, PayloadsControllerUtils, IPayloadsControllerCore, GovV3StorageHelpers, IGovernanceCore} from '../src/GovV3Helpers.sol';
-import {GovHelpers} from '../src/GovHelpers.sol';
 import {AaveMisc} from 'aave-address-book/AaveMisc.sol';
 import {AaveGovernanceV2} from 'aave-address-book/AaveGovernanceV2.sol';
 import {GovernanceV3Ethereum} from 'aave-address-book/GovernanceV3Ethereum.sol';
@@ -25,8 +24,6 @@ contract GovernanceV3Test is Test {
   function setUp() public {
     vm.createSelectFork('mainnet', 18311523);
     payload = new PayloadWithEmit();
-    GovHelpers.executePayload(vm, LONG_PROPOSAL, AaveGovernanceV2.LONG_EXECUTOR);
-    GovHelpers.executePayload(vm, SHORT_PROPOSAL, AaveGovernanceV2.SHORT_EXECUTOR);
   }
 
   function test_injectProposalIntoGovernance() public {

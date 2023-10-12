@@ -9,7 +9,7 @@ import {AaveV2Ethereum} from 'aave-address-book/AaveAddressBook.sol';
 import {AaveV2EthereumAssets} from 'aave-address-book/AaveV2Ethereum.sol';
 import {AaveGovernanceV2} from 'aave-address-book/AaveGovernanceV2.sol';
 import {IV2RateStrategyFactory} from '../src/v2-config-engine/IV2RateStrategyFactory.sol';
-import {GovHelpers} from '../src/GovHelpers.sol';
+import {GovV3Helpers} from '../src/GovV3Helpers.sol';
 import '../src/ProtocolV2TestBase.sol';
 
 contract AaveV2ConfigEngineTest is ProtocolV2TestBase {
@@ -32,7 +32,7 @@ contract AaveV2ConfigEngineTest is ProtocolV2TestBase {
 
     createConfigurationSnapshot('preTestV2RatesUpdates', AaveV2Ethereum.POOL);
 
-    GovHelpers.executePayload(vm, address(payload), AaveGovernanceV2.SHORT_EXECUTOR);
+    GovV3Helpers.executePayload(vm, address(payload));
 
     createConfigurationSnapshot('postTestV2RatesUpdates', AaveV2Ethereum.POOL);
 

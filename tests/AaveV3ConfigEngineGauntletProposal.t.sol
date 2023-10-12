@@ -15,7 +15,7 @@ import {AaveV3AvalancheRatesUpdates070322} from './mocks/gauntlet-updates/AaveV3
 import {AaveV3OptimismRatesUpdates070322} from './mocks/gauntlet-updates/AaveV3OptimismRatesUpdates070322.sol';
 import {AaveV3ArbitrumRatesUpdates070322} from './mocks/gauntlet-updates/AaveV3ArbitrumRatesUpdates070322.sol';
 import {DeployEnginePolLib, DeployEngineEthLib, DeployEngineAvaLib, DeployEngineOptLib, DeployEngineArbLib} from '../scripts/AaveV3ConfigEngine.s.sol';
-import {GovHelpers} from '../src/GovHelpers.sol';
+import {GovV3Helpers} from '../src/GovV3Helpers.sol';
 import '../src/ProtocolV3TestBase.sol';
 
 contract AaveV3PolygonConfigEngineRatesTest is ProtocolV3TestBase {
@@ -31,7 +31,7 @@ contract AaveV3PolygonConfigEngineRatesTest is ProtocolV3TestBase {
 
     createConfigurationSnapshot('preTestEnginePolV3Gauntlet', AaveV3Polygon.POOL);
 
-    GovHelpers.executePayload(vm, address(payload), AaveGovernanceV2.POLYGON_BRIDGE_EXECUTOR);
+    GovV3Helpers.executePayload(vm, address(payload));
 
     createConfigurationSnapshot('postTestEnginePolV3Gauntlet', AaveV3Polygon.POOL);
 
@@ -52,7 +52,7 @@ contract AaveV3AvalancheConfigEngineRatesTest is ProtocolV3TestBase {
 
     createConfigurationSnapshot('preTestEngineAvaV3Gauntlet', AaveV3Avalanche.POOL);
 
-    GovHelpers.executePayload(vm, address(payload), 0xa35b76E4935449E33C56aB24b23fcd3246f13470); // Aave Avalanche's Guardian
+    GovV3Helpers.executePayload(vm, address(payload)); // Aave Avalanche's Guardian
 
     createConfigurationSnapshot('postTestEngineAvaV3Gauntlet', AaveV3Avalanche.POOL);
 
@@ -73,7 +73,7 @@ contract AaveV3OptimismConfigEngineRatesTest is ProtocolV3TestBase {
 
     createConfigurationSnapshot('preTestEngineOptV3Gauntlet', AaveV3Optimism.POOL);
 
-    GovHelpers.executePayload(vm, address(payload), AaveGovernanceV2.OPTIMISM_BRIDGE_EXECUTOR);
+    GovV3Helpers.executePayload(vm, address(payload));
 
     createConfigurationSnapshot('postTestEngineOptV3Gauntlet', AaveV3Optimism.POOL);
 
@@ -94,7 +94,7 @@ contract AaveV3ArbitrumConfigEngineRatesTest is ProtocolV3TestBase {
 
     createConfigurationSnapshot('preTestEngineArbV3Gauntlet', AaveV3Arbitrum.POOL);
 
-    GovHelpers.executePayload(vm, address(payload), AaveGovernanceV2.ARBITRUM_BRIDGE_EXECUTOR);
+    GovV3Helpers.executePayload(vm, address(payload));
 
     createConfigurationSnapshot('postTestEngineArbV3Gauntlet', AaveV3Arbitrum.POOL);
 
