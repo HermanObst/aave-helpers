@@ -58,4 +58,4 @@ git-diff :
 	@printf '%s\n%s\n%s\n' "\`\`\`diff" "$$(git diff --no-index --diff-algorithm=patience --ignore-space-at-eol ${before} ${after})" "\`\`\`" > diffs/${out}.md
 
 ## Claim zkEVM message
-claim :; forge script scripts/ZkEVMClaim.s.sol:ClaimZkEVMMessage --rpc-url https://rpc.public.zkevm-test.net --broadcast --ledger --mnemonic-indexes ${MNEMONIC_INDEX} --sender ${LEDGER_SENDER} --verify -vvvv
+claim :; forge script scripts/ZkEVMClaim.s.sol:ClaimZkEVMMessage --rpc-url https://zkevm-rpc.com --broadcast --ledger --mnemonic-indexes ${MNEMONIC_INDEX} --sender ${LEDGER_SENDER} --verify -vvvv

@@ -19,9 +19,9 @@ interface ZkEVMBridge {
 }
 
 contract ClaimZkEVMMessage is Script {
-  address constant ZK_EVM_BRIDGE = 0xF6BEEeBB578e214CA9E23B0e9683454Ff88Ed2A7;
+  address constant ZK_EVM_BRIDGE = 0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe;
 
-  address constant DESTINATION = 0x72F460dA1f429391D2228369dB653E1441780810;
+  address constant DESTINATION = 0x889c0cc3283DB588A34E89Ad1E8F25B0fc827b4b;
 
   function getProof()
     internal

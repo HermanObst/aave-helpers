@@ -4,14 +4,20 @@ var args = process.argv.slice(2);
 
 async function fetchParams() {
   const bridgeCall = await (
-    await fetch(`https://bridge-api.public.zkevm-test.net/bridges/${args[0]}`)
+    await fetch(`https://bridge-api.zkevm-rpc.com/bridges/${args[0]}`)
   ).json();
-  const deposit = bridgeCall.deposits[bridgeCall.deposits.length - 1];
+  if (process.env.VERBOSE) console.log(bridgeCall);
+  const deposit = bridgeCall.deposits.find(
+    (deposit) => deposit.claim_tx_hash == '' && deposit.ready_for_claim == true
+  );
+  if (!deposit) throw new Error('No claimable deposit txn found');
   const proof = await (
     await fetch(
-      `https://bridge-api.public.zkevm-test.net/merkle-proof?deposit_cnt=${deposit.deposit_cnt}&net_id=${deposit.network_id}`
+      `https://bridge-api.zkevm-rpc.com/merkle-proof?deposit_cnt=${deposit.deposit_cnt}&net_id=${deposit.network_id}`
     )
   ).json();
+
+  if (process.env.VERBOSE) console.log(proof);
   const encodedData = encodeAbiParameters(
     parseAbiParameters(
       'bytes32[32] smtProof, uint32 index, bytes32 mainnetExitRoot, bytes32 rollupExitRoot, uint32 originNetwork, address originAddress, uint32 destinationNetwork, address destinationAddress, uint256 amount, bytes metadata'
