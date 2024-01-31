@@ -120,3 +120,28 @@ contract ProposalCreationSimple is
     'src/20240121_Multi_UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum/UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum.md'
   )
 {}
+
+abstract contract MyComplexPayloads is WithPayloads {
+  function getActions() public view override returns (ActionsPerChain[] memory) {
+    ActionsPerChain[] memory payloads = new ActionsPerChain[](2);
+
+    payloads[0].chainName = 'ethereum';
+    payloads[0].actionCode = new bytes[](1);
+    payloads[0].actionCode[0] = type(LetMeJustHaveSome).creationCode;
+
+    payloads[1].chainName = 'polygon';
+    payloads[1].actionCode = new bytes[](1);
+    payloads[1].actionCode[0] = type(LetMeJustHaveAnother).creationCode;
+
+    return payloads;
+  }
+}
+
+contract DeploymentComplex is MyComplexPayloads, DeployPayloads {}
+
+contract ProposalCreationComplex is
+  MyComplexPayloads,
+  CreateProposal(
+    'src/20240121_Multi_UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum/UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum.md'
+  )
+{}
