@@ -9,15 +9,19 @@ contract LetMeJustHaveSome {
 }
 
 abstract contract WithChainIdValidationAndPayloads is WithChainIdValidation {
-  function getPayloads() public virtual returns (bytes[] memory);
+  function getPayloads() public view virtual returns (bytes[] memory);
 }
 
 abstract contract WithChainIdValidationAndPayloadSimple is WithChainIdValidationAndPayloads {
-  function getPayload() public virtual returns (bytes memory);
+  bytes public payloadCode;
 
-  function getPayloads() public override returns (bytes[] memory) {
+  constructor(bytes memory code) {
+    payloadCode = code;
+  }
+
+  function getPayloads() public view override returns (bytes[] memory) {
     bytes[] memory payloadsCode = new bytes[](1);
-    payloadsCode[0] = getPayload();
+    payloadsCode[0] = payloadCode;
     return payloadsCode;
   }
 }
@@ -44,8 +48,7 @@ abstract contract DeployPayloads is WithChainIdValidationAndPayloads {
   }
 }
 
-contract DeploySomeSimple is WithChainIdValidationAndPayloadSimple, EthereumScript {
-  function getPayload() public override returns (bytes memory) {
-    return type(LetMeJustHaveSome).creationCode;
-  }
-}
+contract DeploySomeSimple is
+  WithChainIdValidationAndPayloadSimple(type(LetMeJustHaveSome).creationCode),
+  EthereumScript
+{}
