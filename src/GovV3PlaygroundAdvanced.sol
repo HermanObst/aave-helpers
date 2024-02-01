@@ -4,14 +4,6 @@ pragma solidity ^0.8.0;
 import {Script} from 'forge-std/Script.sol';
 import {GovV3Helpers, IPayloadsControllerCore, PayloadsControllerUtils} from './GovV3Helpers.sol';
 
-contract LetMeJustHaveSome {
-  string public name = 'some';
-}
-
-contract LetMeJustHaveAnother {
-  string public name = 'another';
-}
-
 abstract contract WithPayloads {
   struct ActionsPerChain {
     string chainName;
@@ -21,22 +13,17 @@ abstract contract WithPayloads {
   function getActions() public view virtual returns (ActionsPerChain[] memory);
 }
 
-abstract contract WithPayloadsSimple is WithPayloads {
-  function getActionsOneChain() public view virtual returns (ActionsPerChain memory);
-
-  function getActions() public view override returns (ActionsPerChain[] memory) {
-    ActionsPerChain[] memory actions = new ActionsPerChain[](1);
-    actions[0] = getActionsOneChain();
-    return actions;
-  }
-}
-
 abstract contract DeployPayloads is WithPayloads, Script {
+  function isChainSupported(string memory chain) public view virtual returns (bool);
+
   function run() external {
     ActionsPerChain[] memory actionsPerChain = getActions();
 
     for (uint256 i = 0; i < actionsPerChain.length; i++) {
       ActionsPerChain memory rawActions = actionsPerChain[i];
+
+      // if actions belongs to the network we should not deploy, skip
+      if (!isChainSupported(rawActions.chainName)) continue;
       require(rawActions.actionCode.length != 0, 'should be at least one payload action per chain');
 
       vm.rpcUrl(rawActions.chainName);
@@ -61,9 +48,41 @@ abstract contract DeployPayloads is WithPayloads, Script {
   }
 }
 
+// not so applicable atm, because requires solid multiChan support, but for the good future
+abstract contract DeployPayloadsMultiChain is DeployPayloads {
+  mapping(bytes32 => bool) internal _supportedChain;
+
+  constructor(string[] memory supportedChains) {
+    for (uint256 i = 0; i < supportedChains.length; i++) {
+      _supportedChain[keccak256(bytes(supportedChains[i]))] = true;
+    }
+  }
+
+  function isChainSupported(string memory chain) public view override returns (bool) {
+    return _supportedChain[keccak256(bytes(chain))];
+  }
+}
+
+abstract contract DeployPayloadsSingleChain is DeployPayloads {
+  string public supportedChain;
+
+  constructor(string memory chainName) {
+    supportedChain = chainName;
+  }
+
+  function isChainSupported(string memory chain) public view override returns (bool) {
+    return keccak256(bytes(chain)) == keccak256(bytes(supportedChain));
+  }
+}
+
+abstract contract DeployPayloadsEthereum is DeployPayloadsSingleChain('ethereum') {}
+
+abstract contract DeployPayloadsPolygon is DeployPayloadsSingleChain('polygon') {}
+
 abstract contract CreateProposal is WithPayloads, Script {
   string internal _ipfsFilePath;
 
+  // TODO: I would make it more human readable with params: date, name, isMulti(?) and generation of the actual string
   constructor(string memory ipfsFilePath) {
     _ipfsFilePath = ipfsFilePath;
   }
@@ -98,50 +117,3 @@ abstract contract CreateProposal is WithPayloads, Script {
     vm.stopBroadcast();
   }
 }
-
-abstract contract MySimplePayloads is WithPayloadsSimple {
-  function getActionsOneChain() public pure override returns (ActionsPerChain memory) {
-    ActionsPerChain memory payload;
-
-    payload.chainName = 'ethereum';
-    payload.actionCode = new bytes[](2);
-    payload.actionCode[0] = type(LetMeJustHaveSome).creationCode;
-    payload.actionCode[1] = type(LetMeJustHaveAnother).creationCode;
-
-    return payload;
-  }
-}
-
-contract DeploymentSimple is MySimplePayloads, DeployPayloads {}
-
-contract ProposalCreationSimple is
-  MySimplePayloads,
-  CreateProposal(
-    'src/20240121_Multi_UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum/UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum.md'
-  )
-{}
-
-abstract contract MyComplexPayloads is WithPayloads {
-  function getActions() public view override returns (ActionsPerChain[] memory) {
-    ActionsPerChain[] memory payloads = new ActionsPerChain[](2);
-
-    payloads[0].chainName = 'ethereum';
-    payloads[0].actionCode = new bytes[](1);
-    payloads[0].actionCode[0] = type(LetMeJustHaveSome).creationCode;
-
-    payloads[1].chainName = 'polygon';
-    payloads[1].actionCode = new bytes[](1);
-    payloads[1].actionCode[0] = type(LetMeJustHaveAnother).creationCode;
-
-    return payloads;
-  }
-}
-
-contract DeploymentComplex is MyComplexPayloads, DeployPayloads {}
-
-contract ProposalCreationComplex is
-  MyComplexPayloads,
-  CreateProposal(
-    'src/20240121_Multi_UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum/UpdateStETHAndWETHRiskParamsOnAaveV3EthereumOptimismAndArbitrum.md'
-  )
-{}
