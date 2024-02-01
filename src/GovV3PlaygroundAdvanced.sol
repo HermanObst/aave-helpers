@@ -27,6 +27,7 @@ abstract contract DeployPayloads is WithPayloads, Script {
       require(rawActions.actionCode.length != 0, 'should be at least one payload action per chain');
 
       vm.rpcUrl(rawActions.chainName);
+      // TODO: after rpc switch we should be checking that chainId is the one we expect, just in case
       vm.startBroadcast();
 
       // compose actions
@@ -112,6 +113,7 @@ abstract contract CreateProposal is WithPayloads, Script {
 
     // create proposal
     vm.rpcUrl('ethereum');
+    // TODO: after rpc switch we should be checking that chainId is the one we expect, just in case
     vm.startBroadcast();
     GovV3Helpers.createProposal(vm, payloadsPinned, GovV3Helpers.ipfsHashFile(vm, _ipfsFilePath));
     vm.stopBroadcast();
