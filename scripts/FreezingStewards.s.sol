@@ -7,6 +7,7 @@ import {AaveV3BNB} from 'aave-address-book/AaveV3BNB.sol';
 import {AaveV3Gnosis} from 'aave-address-book/AaveV3Gnosis.sol';
 import {AaveV3Scroll} from 'aave-address-book/AaveV3Scroll.sol';
 import {AaveV3PolygonZkEvm} from 'aave-address-book/AaveV3PolygonZkEvm.sol';
+import {AaveV3Celo} from 'aave-address-book/AaveV3Celo.sol';
 
 contract DeployGno is GnosisScript {
   function run() external broadcast {
@@ -29,5 +30,11 @@ contract DeployScroll is ScrollScript {
 contract DeployZkEvm is PolygonZkEvmScript {
   function run() external broadcast {
     new FreezingSteward(AaveV3PolygonZkEvm.ACL_MANAGER, AaveV3PolygonZkEvm.POOL_CONFIGURATOR);
+  }
+}
+
+contract DeployCelo is CeloScript {
+  function run() external broadcast {
+    new FreezingSteward(AaveV3Celo.ACL_MANAGER, AaveV3Celo.POOL_CONFIGURATOR);
   }
 }

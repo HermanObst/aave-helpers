@@ -16,6 +16,7 @@ import {IPoolAddressesProvider, IPool, IPoolConfigurator, IAaveOracle, IPoolData
 import {AaveV3BNB} from 'aave-address-book/AaveV3BNB.sol';
 import {AaveV3Scroll} from 'aave-address-book/AaveV3Scroll.sol';
 import {AaveV3PolygonZkEvm} from 'aave-address-book/AaveV3PolygonZkEvm.sol';
+import {AaveV3Celo} from 'aave-address-book/AaveV3Celo.sol';
 
 contract DeployEth is EthereumScript {
   function run() external broadcast {
@@ -123,6 +124,16 @@ contract DeployZkEvm is PolygonZkEvmScript {
       AaveV3PolygonZkEvm.AAVE_PROTOCOL_DATA_PROVIDER,
       IAaveV3ConfigEngine(AaveV3PolygonZkEvm.CONFIG_ENGINE),
       0xC165b4ae0dfB650E0123d4A70D260029Cb6e2C0f
+    );
+  }
+}
+
+contract DeployCelo is CeloScript {
+  function run() external broadcast {
+    new CapsPlusRiskSteward(
+      AaveV3Celo.AAVE_PROTOCOL_DATA_PROVIDER,
+      IAaveV3ConfigEngine(AaveV3Celo.CONFIG_ENGINE),
+      0x37B28aa1Fe1C9FD49fF552E46083b909fbeB0aB4
     );
   }
 }

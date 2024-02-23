@@ -16,6 +16,7 @@ library ChainIds {
   uint256 internal constant AVALANCHE = 43114;
   uint256 internal constant GNOSIS = 100;
   uint256 internal constant SCROLL = 534352;
+  uint256 internal constant CELO = 42220;
   uint256 internal constant SEPOLIA = 11155111;
   uint256 internal constant HARMONY = 1666600000;
 }

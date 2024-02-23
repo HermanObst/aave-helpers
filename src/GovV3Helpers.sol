@@ -23,7 +23,6 @@ import {MiscEthereum} from 'aave-address-book/MiscEthereum.sol';
 import {Address} from 'solidity-utils/contracts/oz-common/Address.sol';
 import {StorageHelpers} from './StorageHelpers.sol';
 import {ProxyHelpers} from './ProxyHelpers.sol';
-import {GovHelpers, IAaveGovernanceV2} from './GovHelpers.sol';
 import {Create2Utils} from './ScriptUtils.sol';
 
 interface IGovernance_V2_5 {

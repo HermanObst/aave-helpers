@@ -80,6 +80,10 @@ abstract contract PolygonZkEvmScript is WithChainIdValidation {
   constructor() WithChainIdValidation(ChainIds.ZK_EVM) {}
 }
 
+abstract contract CeloScript is WithChainIdValidation {
+  constructor() WithChainIdValidation(ChainIds.CELO) {}
+}
+
 abstract contract SepoliaScript is WithChainIdValidation {
   constructor() WithChainIdValidation(ChainIds.SEPOLIA) {}
 }

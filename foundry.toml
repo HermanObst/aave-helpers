@@ -25,6 +25,7 @@ sepolia = "${RPC_SEPOLIA}"
 gnosis="${RPC_GNOSIS}"
 scroll="${RPC_SCROLL}"
 zkevm = "${RPC_ZKEVM}"
+celo = "${RPC_CELO}"
 
 [etherscan]
 mainnet={key="${ETHERSCAN_API_KEY_MAINNET}",chainId=1}
@@ -39,4 +40,5 @@ sepolia={key="${ETHERSCAN_API_KEY_MAINNET}",chainId=11155111}
 gnosis={key="${ETHERSCAN_API_KEY_GNOSIS}",chainId=100, url='https://api.gnosisscan.io/api'}
 scroll={key="${ETHERSCAN_API_KEY_SCROLL}",chainId=534352}
 zkevm={key="${ETHERSCAN_API_KEY_ZKEVM}",chainId=1101}
+celo={key="${ETHERSCAN_API_KEY_CELO}",chainId=42220}
 # See more config options https://github.com/gakonst/foundry/tree/master/config
