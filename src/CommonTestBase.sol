@@ -86,11 +86,6 @@ contract CommonTestBase is Test {
         IERC20(asset).transfer(user, amount);
         return true;
       }
-      if (asset == AaveV3EthereumAssets.USDC_UNDERLYING) {
-        vm.prank(0xcEe284F754E854890e311e3280b767F80797180d);
-        IERC20(asset).transfer(user, amount);
-        return true;
-      }
     }
     if (block.chainid == ChainIds.OPTIMISM) {
       // sUSD
@@ -99,43 +94,10 @@ contract CommonTestBase is Test {
         IERC20(asset).transfer(user, amount);
         return true;
       }
-      if (asset == AaveV3OptimismAssets.USDCn_UNDERLYING) {
-        vm.prank(0xf491d040110384DBcf7F241fFE2A546513fD873d);
-        IERC20(asset).transfer(user, amount);
-        return true;
-      }
     }
     if (block.chainid == ChainIds.GNOSIS) {
       if (asset == AaveV3GnosisAssets.EURe_UNDERLYING) {
         vm.prank(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
-        IERC20(asset).transfer(user, amount);
-        return true;
-      }
-    }
-    if (block.chainid == ChainIds.POLYGON) {
-      if (asset == AaveV3PolygonAssets.USDCn_UNDERLYING) {
-        vm.prank(0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245);
-        IERC20(asset).transfer(user, amount);
-        return true;
-      }
-    }
-    if (block.chainid == ChainIds.ARBITRUM) {
-      if (asset == AaveV3ArbitrumAssets.USDCn_UNDERLYING) {
-        vm.prank(0x47c031236e19d024b42f8AE6780E44A573170703);
-        IERC20(asset).transfer(user, amount);
-        return true;
-      }
-    }
-    if (block.chainid == ChainIds.AVALANCHE) {
-      if (asset == AaveV3AvalancheAssets.USDC_UNDERLYING) {
-        vm.prank(0x9f8c163cBA728e99993ABe7495F06c0A3c8Ac8b9);
-        IERC20(asset).transfer(user, amount);
-        return true;
-      }
-    }
-    if (block.chainid == ChainIds.BASE) {
-      if (asset == AaveV3BaseAssets.USDC_UNDERLYING) {
-        vm.prank(0x20FE51A9229EEf2cF8Ad9E89d91CAb9312cF3b7A);
         IERC20(asset).transfer(user, amount);
         return true;
       }
