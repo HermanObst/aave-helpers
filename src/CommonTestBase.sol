@@ -3,7 +3,7 @@ pragma solidity >=0.7.5 <0.9.0;
 
 import 'forge-std/StdJson.sol';
 import 'forge-std/Test.sol';
-import {VmSafe} from 'forge-std/Vm.sol';
+import {VmSafe, Vm} from 'forge-std/Vm.sol';
 import {IERC20} from 'solidity-utils/contracts/oz-common/interfaces/IERC20.sol';
 import {MiscEthereum} from 'aave-address-book/MiscEthereum.sol';
 import {AaveV2EthereumAssets} from 'aave-address-book/AaveV2Ethereum.sol';
@@ -23,17 +23,7 @@ struct ReserveTokens {
   address variableDebtToken;
 }
 
-contract CommonTestBase is Test {
-  using stdJson for string;
-
-  address public constant ETH_MOCK_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
-  address public constant EOA = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
-
-  function executePayload(Vm vm, address payload) internal {
-    GovV3Helpers.executePayload(vm, payload);
-  }
-
+library StdDealPatch {
   /**
    * @notice deal doesn't support amounts stored in a script right now.
    * This function patches deal to mock and transfer funds instead.
@@ -42,10 +32,10 @@ contract CommonTestBase is Test {
    * @param amount the amount to deal
    * @return bool true if the caller has changed due to prank usage
    */
-  function _patchedDeal(address asset, address user, uint256 amount) internal returns (bool) {
+  function deal(Vm vm, address asset, address user, uint256 amount) internal returns (bool) {
     if (block.chainid == ChainIds.MAINNET) {
       // FXS
-      if (asset == 0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0) {
+      if (asset == AaveV3EthereumAssets.FXS_UNDERLYING) {
         vm.prank(0xF977814e90dA44bFA03b6295A0616a897441aceC);
         IERC20(asset).transfer(user, amount);
         return true;
@@ -104,6 +94,18 @@ contract CommonTestBase is Test {
     }
     return false;
   }
+}
+
+contract CommonTestBase is Test {
+  using stdJson for string;
+
+  address public constant ETH_MOCK_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
+  address public constant EOA = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
+
+  function executePayload(Vm vm, address payload) internal {
+    GovV3Helpers.executePayload(vm, payload);
+  }
 
   /**
    * Patched version of deal
@@ -114,7 +116,7 @@ contract CommonTestBase is Test {
   function deal2(address asset, address user, uint256 amount) internal {
     (VmSafe.CallerMode mode, address oldSender, ) = vm.readCallers();
     if (mode != VmSafe.CallerMode.None) vm.stopPrank();
-    bool patched = _patchedDeal(asset, user, amount);
+    bool patched = StdDealPatch.deal(vm, asset, user, amount);
     if (!patched) {
       deal(asset, user, amount);
     }
