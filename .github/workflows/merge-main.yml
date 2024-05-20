@@ -49,5 +49,5 @@ jobs:
       - name: Run tests using built binary
         run: |
           cd ..
-          foundry-zksync/target/release/forge test --zksync
+          forge test --zksync
 
