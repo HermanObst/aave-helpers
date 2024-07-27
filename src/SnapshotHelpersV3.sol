@@ -9,6 +9,7 @@ import {ProxyHelpers} from './ProxyHelpers.sol';
 import {CommonTestBase, ReserveTokens} from './CommonTestBase.sol';
 import {IDefaultInterestRateStrategyV2} from './dependencies/IDefaultInterestRateStrategyV2.sol';
 import {ProtocolV3TestBase as TestBase, ReserveConfig, LocalVars} from './ProtocolV3TestBase.sol';
+import {ILegacyDefaultInterestRateStrategy} from './dependencies/ILegacyDefaultInterestRateStrategy.sol';
 
 contract SnapshotHelpersV3 is CommonTestBase {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -79,7 +80,7 @@ contract SnapshotHelpersV3 is CommonTestBase {
       IDefaultInterestRateStrategyV2 strategyV2 = IDefaultInterestRateStrategyV2(
         configs[i].interestRateStrategy
       );
-      IDefaultInterestRateStrategy strategyV1 = IDefaultInterestRateStrategy(
+      ILegacyDefaultInterestRateStrategy strategyV1 = ILegacyDefaultInterestRateStrategy(
         configs[i].interestRateStrategy
       );
       address asset = configs[i].underlying;

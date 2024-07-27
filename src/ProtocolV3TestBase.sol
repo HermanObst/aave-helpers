@@ -2,18 +2,22 @@
 pragma solidity >=0.7.5 <0.9.0;
 
 import 'forge-std/Test.sol';
-import {IAaveOracle, IPool, IPoolAddressesProvider, IPoolDataProvider, IDefaultInterestRateStrategy, DataTypes, IPoolConfigurator} from 'aave-address-book/AaveV3.sol';
+import {IAaveOracle, IPool, IPoolAddressesProvider, IPoolDataProvider, IReserveInterestRateStrategy, DataTypes, IPoolConfigurator} from 'aave-address-book/AaveV3.sol';
 import {IERC20} from 'solidity-utils/contracts/oz-common/interfaces/IERC20.sol';
 import {IERC20Metadata} from 'solidity-utils/contracts/oz-common/interfaces/IERC20Metadata.sol';
 import {SafeERC20} from 'solidity-utils/contracts/oz-common/SafeERC20.sol';
-import {ReserveConfiguration} from 'aave-v3-core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
+import {ReserveConfiguration} from 'aave-v3-origin/core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
+import {IDefaultInterestRateStrategyV2} from 'aave-v3-origin/core/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 import {AaveV3EthereumAssets} from 'aave-address-book/AaveV3Ethereum.sol';
+import {DiffUtils} from 'aave-v3-origin/../tests/utils/DiffUtils.sol';
+import {ProtocolV3TestBase as RawProtocolV3TestBase, ReserveConfig} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
 import {IInitializableAdminUpgradeabilityProxy} from './interfaces/IInitializableAdminUpgradeabilityProxy.sol';
 import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
 import {ProxyHelpers} from './ProxyHelpers.sol';
 import {CommonTestBase, ReserveTokens} from './CommonTestBase.sol';
 import {IDefaultInterestRateStrategyV2} from './dependencies/IDefaultInterestRateStrategyV2.sol';
 import {SnapshotHelpersV3} from './SnapshotHelpersV3.sol';
+import {ILegacyDefaultInterestRateStrategy} from './dependencies/ILegacyDefaultInterestRateStrategy.sol';
 
 struct ReserveConfig {
   string symbol;
@@ -60,7 +64,10 @@ struct InterestStrategyValues {
   uint256 variableRateSlope2;
 }
 
-contract ProtocolV3TestBase is CommonTestBase {
+/**
+ * only applicable to harmony at this point
+ */
+contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using SafeERC20 for IERC20;
 
@@ -536,6 +543,8 @@ contract ProtocolV3TestBase is CommonTestBase {
     console.log('Is siloed ', (config.isSiloed) ? 'Yes' : 'No');
     console.log('Is borrowable in isolation ', (config.isBorrowableInIsolation) ? 'Yes' : 'No');
     console.log('Is flashloanable ', (config.isFlashloanable) ? 'Yes' : 'No');
+    console.log('Is virtual accounting active ', (config.virtualAccActive) ? 'Yes' : 'No');
+    console.log('Virtual balance ', config.virtualBalance);
     console.log('-----');
     console.log('-----');
   }
@@ -626,13 +635,19 @@ contract ProtocolV3TestBase is CommonTestBase {
     );
   }
 
+  function getIsVirtualAccActive(
+    DataTypes.ReserveConfigurationMap memory configuration
+  ) external pure returns (bool) {
+    return configuration.getIsVirtualAccActive();
+  }
+
   // TODO: deprecated, remove it later
   function _validateInterestRateStrategy(
     address interestRateStrategyAddress,
     address expectedStrategy,
     InterestStrategyValues memory expectedStrategyValues
   ) internal view {
-    IDefaultInterestRateStrategy strategy = IDefaultInterestRateStrategy(
+    ILegacyDefaultInterestRateStrategy strategy = ILegacyDefaultInterestRateStrategy(
       interestRateStrategyAddress
     );
 
@@ -678,339 +693,5 @@ contract ProtocolV3TestBase is CommonTestBase {
       strategy.getVariableRateSlope2() == expectedStrategyValues.variableRateSlope2,
       '_validateInterestRateStrategy() : INVALID_VARIABLE_SLOPE_2'
     );
-  }
-
-  function _validateInterestRateStrategy(
-    address reserve,
-    address interestRateStrategyAddress,
-    address expectedStrategy,
-    IDefaultInterestRateStrategyV2.InterestRateDataRay memory expectedStrategyValues
-  ) internal view {
-    IDefaultInterestRateStrategyV2 strategy = IDefaultInterestRateStrategyV2(
-      interestRateStrategyAddress
-    );
-
-    require(
-      address(strategy) == expectedStrategy,
-      '_validateInterestRateStrategy() : INVALID_STRATEGY_ADDRESS'
-    );
-
-    require(
-      strategy.getOptimalUsageRatio(reserve) == expectedStrategyValues.optimalUsageRatio,
-      '_validateInterestRateStrategy() : INVALID_OPTIMAL_RATIO'
-    );
-    require(
-      strategy.getBaseVariableBorrowRate(reserve) == expectedStrategyValues.baseVariableBorrowRate,
-      '_validateInterestRateStrategy() : INVALID_BASE_VARIABLE_BORROW'
-    );
-    require(
-      strategy.getVariableRateSlope1(reserve) == expectedStrategyValues.variableRateSlope1,
-      '_validateInterestRateStrategy() : INVALID_VARIABLE_SLOPE_1'
-    );
-    require(
-      strategy.getVariableRateSlope2(reserve) == expectedStrategyValues.variableRateSlope2,
-      '_validateInterestRateStrategy() : INVALID_VARIABLE_SLOPE_2'
-    );
-  }
-
-  function _noReservesConfigsChangesApartNewListings(
-    ReserveConfig[] memory allConfigsBefore,
-    ReserveConfig[] memory allConfigsAfter
-  ) internal pure {
-    for (uint256 i = 0; i < allConfigsBefore.length; i++) {
-      _requireNoChangeInConfigs(allConfigsBefore[i], allConfigsAfter[i]);
-    }
-  }
-
-  function _noReservesConfigsChangesApartFrom(
-    ReserveConfig[] memory allConfigsBefore,
-    ReserveConfig[] memory allConfigsAfter,
-    address assetChangedUnderlying
-  ) internal pure {
-    require(allConfigsBefore.length == allConfigsAfter.length, 'A_UNEXPECTED_NEW_LISTING_HAPPENED');
-
-    for (uint256 i = 0; i < allConfigsBefore.length; i++) {
-      if (assetChangedUnderlying != allConfigsBefore[i].underlying) {
-        _requireNoChangeInConfigs(allConfigsBefore[i], allConfigsAfter[i]);
-      }
-    }
-  }
-
-  /// @dev Version in batch, useful when multiple asset changes are expected
-  function _noReservesConfigsChangesApartFrom(
-    ReserveConfig[] memory allConfigsBefore,
-    ReserveConfig[] memory allConfigsAfter,
-    address[] memory assetChangedUnderlying
-  ) internal pure {
-    require(allConfigsBefore.length == allConfigsAfter.length, 'A_UNEXPECTED_NEW_LISTING_HAPPENED');
-
-    for (uint256 i = 0; i < allConfigsBefore.length; i++) {
-      bool isAssetExpectedToChange;
-      for (uint256 j = 0; j < assetChangedUnderlying.length; j++) {
-        if (assetChangedUnderlying[j] == allConfigsBefore[i].underlying) {
-          isAssetExpectedToChange = true;
-          break;
-        }
-      }
-      if (!isAssetExpectedToChange) {
-        _requireNoChangeInConfigs(allConfigsBefore[i], allConfigsAfter[i]);
-      }
-    }
-  }
-
-  function _requireNoChangeInConfigs(
-    ReserveConfig memory config1,
-    ReserveConfig memory config2
-  ) internal pure {
-    require(
-      keccak256(abi.encodePacked(config1.symbol)) == keccak256(abi.encodePacked(config2.symbol)),
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_SYMBOL_CHANGED'
-    );
-    require(
-      config1.underlying == config2.underlying,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_UNDERLYING_CHANGED'
-    );
-    require(
-      config1.aToken == config2.aToken,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_A_TOKEN_CHANGED'
-    );
-    require(
-      config1.stableDebtToken == config2.stableDebtToken,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_STABLE_DEBT_TOKEN_CHANGED'
-    );
-    require(
-      config1.variableDebtToken == config2.variableDebtToken,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_VARIABLE_DEBT_TOKEN_CHANGED'
-    );
-    require(
-      config1.decimals == config2.decimals,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_DECIMALS_CHANGED'
-    );
-    require(
-      config1.ltv == config2.ltv,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_LTV_CHANGED'
-    );
-    require(
-      config1.liquidationThreshold == config2.liquidationThreshold,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_LIQ_THRESHOLD_CHANGED'
-    );
-    require(
-      config1.liquidationBonus == config2.liquidationBonus,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_LIQ_BONUS_CHANGED'
-    );
-    require(
-      config1.liquidationProtocolFee == config2.liquidationProtocolFee,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_LIQ_PROTOCOL_FEE_CHANGED'
-    );
-    require(
-      config1.reserveFactor == config2.reserveFactor,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_RESERVE_FACTOR_CHANGED'
-    );
-    require(
-      config1.usageAsCollateralEnabled == config2.usageAsCollateralEnabled,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_USAGE_AS_COLLATERAL_ENABLED_CHANGED'
-    );
-    require(
-      config1.borrowingEnabled == config2.borrowingEnabled,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_BORROWING_ENABLED_CHANGED'
-    );
-    require(
-      config1.interestRateStrategy == config2.interestRateStrategy,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_INTEREST_RATE_STRATEGY_CHANGED'
-    );
-    require(
-      config1.stableBorrowRateEnabled == config2.stableBorrowRateEnabled,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_STABLE_BORROWING_CHANGED'
-    );
-    require(
-      config1.isActive == config2.isActive,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_IS_ACTIVE_CHANGED'
-    );
-    require(
-      config1.isFrozen == config2.isFrozen,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_IS_FROZEN_CHANGED'
-    );
-    require(
-      config1.isSiloed == config2.isSiloed,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_IS_SILOED_CHANGED'
-    );
-    require(
-      config1.isBorrowableInIsolation == config2.isBorrowableInIsolation,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_IS_BORROWABLE_IN_ISOLATION_CHANGED'
-    );
-    require(
-      config1.isFlashloanable == config2.isFlashloanable,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_IS_FLASHLOANABLE_CHANGED'
-    );
-    require(
-      config1.supplyCap == config2.supplyCap,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_SUPPLY_CAP_CHANGED'
-    );
-    require(
-      config1.borrowCap == config2.borrowCap,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_BORROW_CAP_CHANGED'
-    );
-    require(
-      config1.debtCeiling == config2.debtCeiling,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_DEBT_CEILING_CHANGED'
-    );
-    require(
-      config1.eModeCategory == config2.eModeCategory,
-      '_noReservesConfigsChangesApartNewListings() : UNEXPECTED_E_MODE_CATEGORY_CHANGED'
-    );
-  }
-
-  function _validateCountOfListings(
-    uint256 count,
-    ReserveConfig[] memory allConfigsBefore,
-    ReserveConfig[] memory allConfigsAfter
-  ) internal pure {
-    require(
-      allConfigsBefore.length == allConfigsAfter.length - count,
-      '_validateCountOfListings() : INVALID_COUNT_OF_LISTINGS'
-    );
-  }
-
-  function _validateReserveTokensImpls(
-    IPoolAddressesProvider addressProvider,
-    ReserveConfig memory config,
-    ReserveTokens memory expectedImpls
-  ) internal {
-    address poolConfigurator = addressProvider.getPoolConfigurator();
-    vm.startPrank(poolConfigurator);
-    require(
-      IInitializableAdminUpgradeabilityProxy(config.aToken).implementation() ==
-        expectedImpls.aToken,
-      '_validateReserveTokensImpls() : INVALID_VARIABLE_DEBT_IMPL'
-    );
-    require(
-      IInitializableAdminUpgradeabilityProxy(config.variableDebtToken).implementation() ==
-        expectedImpls.variableDebtToken,
-      '_validateReserveTokensImpls() : INVALID_ATOKEN_IMPL'
-    );
-    require(
-      IInitializableAdminUpgradeabilityProxy(config.stableDebtToken).implementation() ==
-        expectedImpls.stableDebtToken,
-      '_validateReserveTokensImpls() : INVALID_STABLE_DEBT_IMPL'
-    );
-    vm.stopPrank();
-  }
-
-  function _validateAssetSourceOnOracle(
-    IPoolAddressesProvider addressesProvider,
-    address asset,
-    address expectedSource
-  ) internal view {
-    IAaveOracle oracle = IAaveOracle(addressesProvider.getPriceOracle());
-
-    require(
-      oracle.getSourceOfAsset(asset) == expectedSource,
-      '_validateAssetSourceOnOracle() : INVALID_PRICE_SOURCE'
-    );
-  }
-
-  function _validateAssetsOnEmodeCategory(
-    uint256 category,
-    ReserveConfig[] memory assetsConfigs,
-    string[] memory expectedAssets
-  ) internal pure {
-    string[] memory assetsInCategory = new string[](assetsConfigs.length);
-
-    uint256 countCategory;
-    for (uint256 i = 0; i < assetsConfigs.length; i++) {
-      if (assetsConfigs[i].eModeCategory == category) {
-        assetsInCategory[countCategory] = assetsConfigs[i].symbol;
-        require(
-          keccak256(bytes(assetsInCategory[countCategory])) ==
-            keccak256(bytes(expectedAssets[countCategory])),
-          '_getAssetOnEmodeCategory(): INCONSISTENT_ASSETS'
-        );
-        countCategory++;
-        if (countCategory > expectedAssets.length) {
-          revert('_getAssetOnEmodeCategory(): MORE_ASSETS_IN_CATEGORY_THAN_EXPECTED');
-        }
-      }
-    }
-    if (countCategory < expectedAssets.length) {
-      revert('_getAssetOnEmodeCategory(): LESS_ASSETS_IN_CATEGORY_THAN_EXPECTED');
-    }
-  }
-
-  function _validateEmodeCategory(
-    IPoolAddressesProvider addressesProvider,
-    uint256 category,
-    DataTypes.EModeCategory memory expectedCategoryData
-  ) internal view {
-    address poolAddress = addressesProvider.getPool();
-    DataTypes.EModeCategory memory currentCategoryData = IPool(poolAddress).getEModeCategoryData(
-      uint8(category)
-    );
-    require(
-      keccak256(bytes(currentCategoryData.label)) == keccak256(bytes(expectedCategoryData.label)),
-      '_validateEmodeCategory(): INVALID_LABEL'
-    );
-    require(
-      currentCategoryData.ltv == expectedCategoryData.ltv,
-      '_validateEmodeCategory(): INVALID_LTV'
-    );
-    require(
-      currentCategoryData.liquidationThreshold == expectedCategoryData.liquidationThreshold,
-      '_validateEmodeCategory(): INVALID_LT'
-    );
-    require(
-      currentCategoryData.liquidationBonus == expectedCategoryData.liquidationBonus,
-      '_validateEmodeCategory(): INVALID_LB'
-    );
-    require(
-      currentCategoryData.priceSource == expectedCategoryData.priceSource,
-      '_validateEmodeCategory(): INVALID_PRICE_SOURCE'
-    );
-  }
-}
-
-/**
- * only applicable to v3 harmony at this point
- */
-contract ProtocolV3LegacyTestBase is ProtocolV3TestBase {
-  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
-
-  function _getStructReserveConfig(
-    IPool pool,
-    IPoolDataProvider.TokenData memory reserve
-  ) internal view override returns (ReserveConfig memory) {
-    ReserveConfig memory localConfig;
-    DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(
-      reserve.tokenAddress
-    );
-    localConfig.interestRateStrategy = pool
-      .getReserveData(reserve.tokenAddress)
-      .interestRateStrategyAddress;
-    (
-      localConfig.ltv,
-      localConfig.liquidationThreshold,
-      localConfig.liquidationBonus,
-      localConfig.decimals,
-      localConfig.reserveFactor,
-      localConfig.eModeCategory
-    ) = configuration.getParams();
-    (
-      localConfig.isActive,
-      localConfig.isFrozen,
-      localConfig.borrowingEnabled,
-      localConfig.stableBorrowRateEnabled,
-      localConfig.isPaused
-    ) = configuration.getFlags();
-    localConfig.symbol = reserve.symbol;
-    localConfig.underlying = reserve.tokenAddress;
-    localConfig.usageAsCollateralEnabled = localConfig.liquidationThreshold != 0;
-    localConfig.isSiloed = configuration.getSiloedBorrowing();
-    (localConfig.borrowCap, localConfig.supplyCap) = configuration.getCaps();
-    localConfig.debtCeiling = configuration.getDebtCeiling();
-    localConfig.liquidationProtocolFee = configuration.getLiquidationProtocolFee();
-    localConfig.isBorrowableInIsolation = configuration.getBorrowableInIsolation();
-
-    localConfig.isFlashloanable = false;
-
-    return localConfig;
   }
 }
