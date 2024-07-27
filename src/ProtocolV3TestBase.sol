@@ -7,45 +7,15 @@ import {IERC20} from 'solidity-utils/contracts/oz-common/interfaces/IERC20.sol';
 import {IERC20Metadata} from 'solidity-utils/contracts/oz-common/interfaces/IERC20Metadata.sol';
 import {SafeERC20} from 'solidity-utils/contracts/oz-common/SafeERC20.sol';
 import {ReserveConfiguration} from 'aave-v3-origin/core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
-import {IDefaultInterestRateStrategyV2} from 'aave-v3-origin/core/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 import {AaveV3EthereumAssets} from 'aave-address-book/AaveV3Ethereum.sol';
 import {DiffUtils} from 'aave-v3-origin/../tests/utils/DiffUtils.sol';
-import {ProtocolV3TestBase as RawProtocolV3TestBase, ReserveConfig} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
+import {ProtocolV3TestBase as RawProtocolV3TestBase, ReserveConfig, ReserveTokens} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
 import {IInitializableAdminUpgradeabilityProxy} from './interfaces/IInitializableAdminUpgradeabilityProxy.sol';
 import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
 import {ProxyHelpers} from './ProxyHelpers.sol';
-import {CommonTestBase, ReserveTokens} from './CommonTestBase.sol';
-import {IDefaultInterestRateStrategyV2} from './dependencies/IDefaultInterestRateStrategyV2.sol';
+import {CommonTestBase} from './CommonTestBase.sol';
 import {SnapshotHelpersV3} from './SnapshotHelpersV3.sol';
 import {ILegacyDefaultInterestRateStrategy} from './dependencies/ILegacyDefaultInterestRateStrategy.sol';
-
-struct ReserveConfig {
-  string symbol;
-  address underlying;
-  address aToken;
-  address stableDebtToken;
-  address variableDebtToken;
-  uint256 decimals;
-  uint256 ltv;
-  uint256 liquidationThreshold;
-  uint256 liquidationBonus;
-  uint256 liquidationProtocolFee;
-  uint256 reserveFactor;
-  bool usageAsCollateralEnabled;
-  bool borrowingEnabled;
-  address interestRateStrategy;
-  bool stableBorrowRateEnabled;
-  bool isPaused;
-  bool isActive;
-  bool isFrozen;
-  bool isSiloed;
-  bool isBorrowableInIsolation;
-  bool isFlashloanable;
-  uint256 supplyCap;
-  uint256 borrowCap;
-  uint256 debtCeiling;
-  uint256 eModeCategory;
-}
 
 struct LocalVars {
   IPoolDataProvider.TokenData[] reserves;
@@ -163,7 +133,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   function createConfigurationSnapshot(
     string memory reportName,
     IPool pool
-  ) public returns (ReserveConfig[] memory) {
+  ) public override returns (ReserveConfig[] memory) {
     return createConfigurationSnapshot(reportName, pool, true, true, true, true);
   }
 
@@ -174,7 +144,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     bool strategyConfigs,
     bool eModeConigs,
     bool poolConfigs
-  ) public returns (ReserveConfig[] memory) {
+  ) public override returns (ReserveConfig[] memory) {
     return snapshotHelper.createConfigurationSnapshot(
       reportName,
       pool,
@@ -416,7 +386,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     string memory path,
     ReserveConfig[] memory configs,
     IPool pool
-  ) internal {
+  ) internal override {
     return snapshotHelper.writeEModeConfigs(
       path,
       configs,
@@ -424,7 +394,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     );
   }
 
-  function _writeStrategyConfigs(string memory path, ReserveConfig[] memory configs) internal {
+  function _writeStrategyConfigs(string memory path, ReserveConfig[] memory configs) internal override {
     return snapshotHelper.writeStrategyConfigs(path, configs);
   }
 
@@ -432,22 +402,22 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     string memory path,
     ReserveConfig[] memory configs,
     IPool pool
-  ) internal {
+  ) internal override {
     return snapshotHelper.writeReserveConfigs(path, configs, pool);
   }
 
-  function _writePoolConfiguration(string memory path, IPool pool) internal {
+  function _writePoolConfiguration(string memory path, IPool pool) internal override {
     return snapshotHelper.writePoolConfiguration(path, pool);
   }
 
-  function _getReservesConfigs(IPool pool) internal view returns (ReserveConfig[] memory) {
+  function _getReservesConfigs(IPool pool) internal view override returns (ReserveConfig[] memory) {
     return snapshotHelper.getReservesConfigs(pool);
   }
 
   function _getStructReserveTokens(
     IPoolDataProvider pdp,
     address underlyingAddress
-  ) internal view returns (ReserveTokens memory) {
+  ) internal view override returns (ReserveTokens memory) {
     return snapshotHelper.getStructReserveTokens(pdp, underlyingAddress);
   }
 
@@ -459,7 +429,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   }
 
   // TODO This should probably be simplified with assembly, too much boilerplate
-  function _clone(ReserveConfig memory config) internal pure returns (ReserveConfig memory) {
+  function _clone(ReserveConfig memory config) internal pure override returns (ReserveConfig memory) {
     return
       ReserveConfig({
         symbol: config.symbol,
@@ -486,14 +456,17 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
         supplyCap: config.supplyCap,
         borrowCap: config.borrowCap,
         debtCeiling: config.debtCeiling,
-        eModeCategory: config.eModeCategory
+        eModeCategory: config.eModeCategory,
+        virtualAccActive: config.virtualAccActive,
+        virtualBalance: config.virtualBalance,
+        aTokenUnderlyingBalance: config.aTokenUnderlyingBalance
       });
   }
 
   function _findReserveConfig(
     ReserveConfig[] memory configs,
     address underlying
-  ) internal pure returns (ReserveConfig memory) {
+  ) internal pure override returns (ReserveConfig memory) {
     for (uint256 i = 0; i < configs.length; i++) {
       if (configs[i].underlying == underlying) {
         // Important to clone the struct, to avoid unexpected side effect if modifying the returned config
@@ -506,7 +479,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   function _findReserveConfigBySymbol(
     ReserveConfig[] memory configs,
     string memory symbolOfUnderlying
-  ) internal pure returns (ReserveConfig memory) {
+  ) internal pure override returns (ReserveConfig memory) {
     for (uint256 i = 0; i < configs.length; i++) {
       if (
         keccak256(abi.encodePacked(configs[i].symbol)) ==
@@ -552,7 +525,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   function _validateReserveConfig(
     ReserveConfig memory expectedConfig,
     ReserveConfig[] memory allConfigs
-  ) internal pure {
+  ) internal pure override {
     ReserveConfig memory config = _findReserveConfig(allConfigs, expectedConfig.underlying);
     require(
       keccak256(bytes(config.symbol)) == keccak256(bytes(expectedConfig.symbol)),

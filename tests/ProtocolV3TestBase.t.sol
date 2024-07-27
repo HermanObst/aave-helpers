@@ -65,7 +65,7 @@ contract ProtocolV3TestE2ETestAsset is ProtocolV3TestBase {
 }
 
 contract ProtocolV3TestE2ETestOptimismAll is ProtocolV3TestBase {
-  function setUp() public {
+  function setUp() public override {
     vm.createSelectFork('optimism', 123145540);
   }
 
@@ -139,7 +139,7 @@ contract ProtocolV3TestOptimismSnapshot is ProtocolV3TestBase {
 
 
 contract ProtocolV3TestFantomSnapshot is ProtocolV3TestBase {
-  function setUp() public {
+  function setUp() public override {
     vm.createSelectFork('fantom', 86731015);
   }
 

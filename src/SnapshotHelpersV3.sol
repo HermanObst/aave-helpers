@@ -1,14 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IAaveOracle, IPool, IPoolAddressesProvider, IPoolDataProvider, IDefaultInterestRateStrategy, DataTypes, IPoolConfigurator} from 'aave-address-book/AaveV3.sol';
+import {IERC20Detailed} from 'aave-v3-core/contracts/dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IPoolAddressesProvider} from 'aave-v3-core/contracts/interfaces/IPoolAddressesProvider.sol';
+import {IPoolDataProvider} from 'aave-v3-core/contracts/interfaces/IPoolDataProvider.sol';
+import {IPool} from 'aave-v3-core/contracts/interfaces/IPool.sol';
+import {IAaveOracle} from 'aave-v3-core/contracts/interfaces/IAaveOracle.sol';
+import {IPoolConfigurator} from 'aave-v3-core/contracts/interfaces/IPoolConfigurator.sol';
 import {IERC20Metadata} from 'solidity-utils/contracts/oz-common/interfaces/IERC20Metadata.sol';
 import {ReserveConfiguration} from 'aave-v3-core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
 import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
 import {ProxyHelpers} from './ProxyHelpers.sol';
-import {CommonTestBase, ReserveTokens} from './CommonTestBase.sol';
-import {IDefaultInterestRateStrategyV2} from './dependencies/IDefaultInterestRateStrategyV2.sol';
-import {ProtocolV3TestBase as TestBase, ReserveConfig, LocalVars} from './ProtocolV3TestBase.sol';
+import {CommonTestBase} from './CommonTestBase.sol';
+import {IDefaultInterestRateStrategyV2} from 'aave-v3-core/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
+import {ReserveConfig, ReserveTokens, DataTypes} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
+import {ProtocolV3TestBase as TestBase, LocalVars} from './ProtocolV3TestBase.sol';
 import {ILegacyDefaultInterestRateStrategy} from './dependencies/ILegacyDefaultInterestRateStrategy.sol';
 
 contract SnapshotHelpersV3 is CommonTestBase {
@@ -168,7 +174,6 @@ contract SnapshotHelpersV3 is CommonTestBase {
     // keys for json stringification
     string memory reservesKey = 'reserves';
     string memory content = '{}';
-    vm.serializeJson(reservesKey, '{}');
 
     IPoolAddressesProvider addressesProvider = IPoolAddressesProvider(pool.ADDRESSES_PROVIDER());
     IAaveOracle oracle = IAaveOracle(addressesProvider.getPriceOracle());
@@ -177,10 +182,8 @@ contract SnapshotHelpersV3 is CommonTestBase {
       ExtendedAggregatorV2V3Interface assetOracle = ExtendedAggregatorV2V3Interface(
         oracle.getSourceOfAsset(config.underlying)
       );
-      DataTypes.ReserveData memory reserveData = pool.getReserveData(config.underlying);
 
       string memory key = vm.toString(config.underlying);
-      vm.serializeJson(key, '{}');
       vm.serializeString(key, 'symbol', config.symbol);
       vm.serializeUint(key, 'ltv', config.ltv);
       vm.serializeUint(key, 'liquidationThreshold', config.liquidationThreshold);
@@ -192,10 +195,6 @@ contract SnapshotHelpersV3 is CommonTestBase {
       vm.serializeUint(key, 'supplyCap', config.supplyCap);
       vm.serializeUint(key, 'debtCeiling', config.debtCeiling);
       vm.serializeUint(key, 'eModeCategory', config.eModeCategory);
-      vm.serializeUint(key, 'liquidityIndex', reserveData.liquidityIndex);
-      vm.serializeUint(key, 'currentLiquidityRate', reserveData.currentLiquidityRate);
-      vm.serializeUint(key, 'variableBorrowIndex', reserveData.variableBorrowIndex);
-      vm.serializeUint(key, 'currentVariableBorrowRate', reserveData.currentVariableBorrowRate);
       vm.serializeBool(key, 'usageAsCollateralEnabled', config.usageAsCollateralEnabled);
       vm.serializeBool(key, 'borrowingEnabled', config.borrowingEnabled);
       vm.serializeBool(key, 'stableBorrowRateEnabled', config.stableBorrowRateEnabled);
@@ -215,8 +214,8 @@ contract SnapshotHelpersV3 is CommonTestBase {
         'aTokenImpl',
         ProxyHelpers.getInitializableAdminUpgradeabilityProxyImplementation(vm, config.aToken)
       );
-      vm.serializeString(key, 'aTokenSymbol', IERC20Metadata(config.aToken).symbol());
-      vm.serializeString(key, 'aTokenName', IERC20Metadata(config.aToken).name());
+      vm.serializeString(key, 'aTokenSymbol', IERC20Detailed(config.aToken).symbol());
+      vm.serializeString(key, 'aTokenName', IERC20Detailed(config.aToken).name());
       vm.serializeAddress(
         key,
         'stableDebtTokenImpl',
@@ -228,9 +227,9 @@ contract SnapshotHelpersV3 is CommonTestBase {
       vm.serializeString(
         key,
         'stableDebtTokenSymbol',
-        IERC20Metadata(config.stableDebtToken).symbol()
+        IERC20Detailed(config.stableDebtToken).symbol()
       );
-      vm.serializeString(key, 'stableDebtTokenName', IERC20Metadata(config.stableDebtToken).name());
+      vm.serializeString(key, 'stableDebtTokenName', IERC20Detailed(config.stableDebtToken).name());
       vm.serializeAddress(
         key,
         'variableDebtTokenImpl',
@@ -242,12 +241,12 @@ contract SnapshotHelpersV3 is CommonTestBase {
       vm.serializeString(
         key,
         'variableDebtTokenSymbol',
-        IERC20Metadata(config.variableDebtToken).symbol()
+        IERC20Detailed(config.variableDebtToken).symbol()
       );
       vm.serializeString(
         key,
         'variableDebtTokenName',
-        IERC20Metadata(config.variableDebtToken).name()
+        IERC20Detailed(config.variableDebtToken).name()
       );
       vm.serializeAddress(key, 'oracle', address(assetOracle));
       if (address(assetOracle) != address(0)) {
@@ -266,6 +265,11 @@ contract SnapshotHelpersV3 is CommonTestBase {
           } catch {}
         }
       }
+
+      vm.serializeBool(key, 'virtualAccountingActive', config.virtualAccActive);
+      vm.serializeUint(key, 'virtualBalance', config.virtualBalance);
+      vm.serializeUint(key, 'aTokenUnderlyingBalance', config.aTokenUnderlyingBalance);
+
       string memory out = vm.serializeUint(
         key,
         'oracleLatestAnswer',
@@ -390,5 +394,15 @@ contract SnapshotHelpersV3 is CommonTestBase {
     localConfig.isFlashloanable = configuration.getFlashLoanEnabled();
 
     return localConfig;
+  }
+
+  function _isInUint256Array(
+    uint256[] memory haystack,
+    uint256 needle
+  ) internal pure returns (bool) {
+    for (uint256 i = 0; i < haystack.length; i++) {
+      if (haystack[i] == needle) return true;
+    }
+    return false;
   }
 }
