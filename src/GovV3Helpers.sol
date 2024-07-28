@@ -22,7 +22,7 @@ import {GovernanceV3PolygonZkEvm} from 'aave-address-book/GovernanceV3PolygonZkE
 import {MiscEthereum} from 'aave-address-book/MiscEthereum.sol';
 import {Address} from 'solidity-utils/contracts/oz-common/Address.sol';
 import {StorageHelpers} from './StorageHelpers.sol';
-import {ProxyHelpers} from './ProxyHelpers.sol';
+import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
 import {Create2Utils} from './ScriptUtils.sol';
 
 interface IGovernance_V2_5 {

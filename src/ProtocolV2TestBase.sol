@@ -12,7 +12,7 @@ import {DiffUtils} from 'aave-v3-origin/../tests/utils/DiffUtils.sol';
 import {IInitializableAdminUpgradeabilityProxy} from './interfaces/IInitializableAdminUpgradeabilityProxy.sol';
 import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
 import {CommonTestBase, ReserveTokens} from './CommonTestBase.sol';
-import {ProxyHelpers} from './ProxyHelpers.sol';
+import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
 import {ChainIds} from './ChainIds.sol';
 import {SnapshotHelpersV2} from './SnapshotHelpersV2.sol';
 

@@ -10,7 +10,7 @@ import {IPoolConfigurator} from 'aave-v3-core/contracts/interfaces/IPoolConfigur
 import {IERC20Metadata} from 'solidity-utils/contracts/oz-common/interfaces/IERC20Metadata.sol';
 import {ReserveConfiguration} from 'aave-v3-core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
 import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
-import {ProxyHelpers} from './ProxyHelpers.sol';
+import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
 import {CommonTestBase} from './CommonTestBase.sol';
 import {IDefaultInterestRateStrategyV2} from 'aave-v3-core/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 import {ReserveConfig, ReserveTokens, DataTypes} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';

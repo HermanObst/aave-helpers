@@ -12,7 +12,7 @@ import {DiffUtils} from 'aave-v3-origin/../tests/utils/DiffUtils.sol';
 import {ProtocolV3TestBase as RawProtocolV3TestBase, ReserveConfig, ReserveTokens} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
 import {IInitializableAdminUpgradeabilityProxy} from './interfaces/IInitializableAdminUpgradeabilityProxy.sol';
 import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
-import {ProxyHelpers} from './ProxyHelpers.sol';
+import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
 import {CommonTestBase} from './CommonTestBase.sol';
 import {SnapshotHelpersV3} from './SnapshotHelpersV3.sol';
 import {ILegacyDefaultInterestRateStrategy} from './dependencies/ILegacyDefaultInterestRateStrategy.sol';
@@ -520,92 +520,6 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     console.log('Virtual balance ', config.virtualBalance);
     console.log('-----');
     console.log('-----');
-  }
-
-  function _validateReserveConfig(
-    ReserveConfig memory expectedConfig,
-    ReserveConfig[] memory allConfigs
-  ) internal pure override {
-    ReserveConfig memory config = _findReserveConfig(allConfigs, expectedConfig.underlying);
-    require(
-      keccak256(bytes(config.symbol)) == keccak256(bytes(expectedConfig.symbol)),
-      '_validateReserveConfig() : INVALID_SYMBOL'
-    );
-    require(
-      config.underlying == expectedConfig.underlying,
-      '_validateReserveConfig() : INVALID_UNDERLYING'
-    );
-    require(config.decimals == expectedConfig.decimals, '_validateReserveConfig: INVALID_DECIMALS');
-    require(config.ltv == expectedConfig.ltv, '_validateReserveConfig: INVALID_LTV');
-    require(
-      config.liquidationThreshold == expectedConfig.liquidationThreshold,
-      '_validateReserveConfig: INVALID_LIQ_THRESHOLD'
-    );
-    require(
-      config.liquidationBonus == expectedConfig.liquidationBonus,
-      '_validateReserveConfig: INVALID_LIQ_BONUS'
-    );
-    require(
-      config.liquidationProtocolFee == expectedConfig.liquidationProtocolFee,
-      '_validateReserveConfig: INVALID_LIQUIDATION_PROTOCOL_FEE'
-    );
-    require(
-      config.reserveFactor == expectedConfig.reserveFactor,
-      '_validateReserveConfig: INVALID_RESERVE_FACTOR'
-    );
-
-    require(
-      config.usageAsCollateralEnabled == expectedConfig.usageAsCollateralEnabled,
-      '_validateReserveConfig: INVALID_USAGE_AS_COLLATERAL'
-    );
-    require(
-      config.borrowingEnabled == expectedConfig.borrowingEnabled,
-      '_validateReserveConfig: INVALID_BORROWING_ENABLED'
-    );
-    require(
-      config.stableBorrowRateEnabled == expectedConfig.stableBorrowRateEnabled,
-      '_validateReserveConfig: INVALID_STABLE_BORROW_ENABLED'
-    );
-    require(
-      config.isActive == expectedConfig.isActive,
-      '_validateReserveConfig: INVALID_IS_ACTIVE'
-    );
-    require(
-      config.isFrozen == expectedConfig.isFrozen,
-      '_validateReserveConfig: INVALID_IS_FROZEN'
-    );
-    require(
-      config.isSiloed == expectedConfig.isSiloed,
-      '_validateReserveConfig: INVALID_IS_SILOED'
-    );
-    require(
-      config.isBorrowableInIsolation == expectedConfig.isBorrowableInIsolation,
-      '_validateReserveConfig: INVALID_IS_BORROWABLE_IN_ISOLATION'
-    );
-    require(
-      config.isFlashloanable == expectedConfig.isFlashloanable,
-      '_validateReserveConfig: INVALID_IS_FLASHLOANABLE'
-    );
-    require(
-      config.supplyCap == expectedConfig.supplyCap,
-      '_validateReserveConfig: INVALID_SUPPLY_CAP'
-    );
-    require(
-      config.borrowCap == expectedConfig.borrowCap,
-      '_validateReserveConfig: INVALID_BORROW_CAP'
-    );
-    require(
-      config.debtCeiling == expectedConfig.debtCeiling,
-      '_validateReserveConfig: INVALID_DEBT_CEILING'
-    );
-    require(
-      config.eModeCategory == expectedConfig.eModeCategory,
-      '_validateReserveConfig: INVALID_EMODE_CATEGORY'
-    );
-    require(
-      config.interestRateStrategy == expectedConfig.interestRateStrategy,
-      '_validateReserveConfig: INVALID_INTEREST_RATE_STRATEGY'
-    );
   }
 
   function getIsVirtualAccActive(

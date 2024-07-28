@@ -10,7 +10,7 @@ import {AaveV3Avalanche} from 'aave-address-book/AaveV3Avalanche.sol';
 import {AaveV3Harmony} from 'aave-address-book/AaveV3Harmony.sol';
 import {AaveV3Fantom} from 'aave-address-book/AaveV3Fantom.sol';
 import {MiscEthereum} from 'aave-address-book/MiscEthereum.sol';
-import {ProxyHelpers} from './ProxyHelpers.sol';
+import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
 import {ChainIds} from './ChainIds.sol';
 import {StorageHelpers} from './StorageHelpers.sol';
 
