@@ -587,7 +587,7 @@ contract ADITestBase is Test {
     uint256 chainId
   ) internal pure returns (uint256[] memory) {
     if (chainId == ChainIds.MAINNET) {
-      uint256[] memory chainIds = new uint256[](10);
+      uint256[] memory chainIds = new uint256[](11);
       chainIds[0] = ChainIds.MAINNET;
       chainIds[1] = ChainIds.POLYGON;
       chainIds[2] = ChainIds.AVALANCHE;
