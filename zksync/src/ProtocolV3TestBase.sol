@@ -37,7 +37,7 @@ struct InterestStrategyValues {
 /**
  * only applicable to harmony at this point
  */
-contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
+contract ProtocolV3TestBaseZkSync is RawProtocolV3TestBase, CommonTestBase {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using SafeERC20 for IERC20;
 
@@ -463,59 +463,5 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     DataTypes.ReserveConfigurationMap memory configuration
   ) external pure returns (bool) {
     return configuration.getIsVirtualAccActive();
-  }
-
-  // TODO: deprecated, remove it later
-  function _validateInterestRateStrategy(
-    address interestRateStrategyAddress,
-    address expectedStrategy,
-    InterestStrategyValues memory expectedStrategyValues
-  ) internal view {
-    ILegacyDefaultInterestRateStrategy strategy = ILegacyDefaultInterestRateStrategy(
-      interestRateStrategyAddress
-    );
-
-    require(
-      address(strategy) == expectedStrategy,
-      '_validateInterestRateStrategy() : INVALID_STRATEGY_ADDRESS'
-    );
-
-    require(
-      strategy.OPTIMAL_USAGE_RATIO() == expectedStrategyValues.optimalUsageRatio,
-      '_validateInterestRateStrategy() : INVALID_OPTIMAL_RATIO'
-    );
-    require(
-      strategy.OPTIMAL_STABLE_TO_TOTAL_DEBT_RATIO() ==
-        expectedStrategyValues.optimalStableToTotalDebtRatio,
-      '_validateInterestRateStrategy() : INVALID_OPTIMAL_STABLE_TO_TOTAL_DEBT_RATIO'
-    );
-    require(
-      address(strategy.ADDRESSES_PROVIDER()) == expectedStrategyValues.addressesProvider,
-      '_validateInterestRateStrategy() : INVALID_ADDRESSES_PROVIDER'
-    );
-    require(
-      strategy.getBaseVariableBorrowRate() == expectedStrategyValues.baseVariableBorrowRate,
-      '_validateInterestRateStrategy() : INVALID_BASE_VARIABLE_BORROW'
-    );
-    require(
-      strategy.getBaseStableBorrowRate() == expectedStrategyValues.baseStableBorrowRate,
-      '_validateInterestRateStrategy() : INVALID_BASE_STABLE_BORROW'
-    );
-    require(
-      strategy.getStableRateSlope1() == expectedStrategyValues.stableRateSlope1,
-      '_validateInterestRateStrategy() : INVALID_STABLE_SLOPE_1'
-    );
-    require(
-      strategy.getStableRateSlope2() == expectedStrategyValues.stableRateSlope2,
-      '_validateInterestRateStrategy() : INVALID_STABLE_SLOPE_2'
-    );
-    require(
-      strategy.getVariableRateSlope1() == expectedStrategyValues.variableRateSlope1,
-      '_validateInterestRateStrategy() : INVALID_VARIABLE_SLOPE_1'
-    );
-    require(
-      strategy.getVariableRateSlope2() == expectedStrategyValues.variableRateSlope2,
-      '_validateInterestRateStrategy() : INVALID_VARIABLE_SLOPE_2'
-    );
   }
 }

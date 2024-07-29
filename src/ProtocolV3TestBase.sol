@@ -385,7 +385,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   function _writeStrategyConfigs(
     string memory path,
     ReserveConfig[] memory configs
-  ) internal override {
+  ) internal virtual override {
     // keys for json stringification
     string memory strategiesKey = 'stategies';
     string memory content = '{}';

@@ -14,7 +14,7 @@ import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
 import {CommonTestBase} from '../../src/CommonTestBase.sol';
 import {IDefaultInterestRateStrategyV2} from 'aave-v3-core/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 import {ReserveConfig, ReserveTokens, DataTypes} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
-import {ProtocolV3TestBase as TestBase, LocalVars} from './ProtocolV3TestBase.sol';
+import {ProtocolV3TestBaseZkSync as TestBase, LocalVars} from './ProtocolV3TestBase.sol';
 import {ILegacyDefaultInterestRateStrategy} from '../../src/dependencies/ILegacyDefaultInterestRateStrategy.sol';
 
 contract SnapshotHelpersV3 is CommonTestBase {
