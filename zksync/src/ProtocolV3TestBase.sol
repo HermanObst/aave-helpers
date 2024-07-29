@@ -37,7 +37,7 @@ struct InterestStrategyValues {
 /**
  * only applicable to harmony at this point
  */
-contract ProtocolV3TestBaseZkSync is RawProtocolV3TestBase, CommonTestBase {
+contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using SafeERC20 for IERC20;
 
