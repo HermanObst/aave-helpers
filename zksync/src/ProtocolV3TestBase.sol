@@ -7,15 +7,15 @@ import {IERC20} from 'solidity-utils/contracts/oz-common/interfaces/IERC20.sol';
 import {IERC20Metadata} from 'solidity-utils/contracts/oz-common/interfaces/IERC20Metadata.sol';
 import {SafeERC20} from 'solidity-utils/contracts/oz-common/SafeERC20.sol';
 import {ReserveConfiguration} from 'aave-v3-origin/core/contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
-import {IDefaultInterestRateStrategyV2} from 'aave-v3-origin/core/contracts/interfaces/IDefaultInterestRateStrategyV2.sol';
 import {AaveV3EthereumAssets} from 'aave-address-book/AaveV3Ethereum.sol';
 import {DiffUtils} from 'aave-v3-origin/../tests/utils/DiffUtils.sol';
-import {ProtocolV3TestBase as RawProtocolV3TestBase, ReserveConfig} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
-import {IInitializableAdminUpgradeabilityProxy} from './interfaces/IInitializableAdminUpgradeabilityProxy.sol';
-import {ExtendedAggregatorV2V3Interface} from './interfaces/ExtendedAggregatorV2V3Interface.sol';
-import {ProxyHelpers} from './ProxyHelpers.sol';
-import {CommonTestBase, ReserveTokens} from './CommonTestBase.sol';
-import {ILegacyDefaultInterestRateStrategy} from './dependencies/ILegacyDefaultInterestRateStrategy.sol';
+import {ProtocolV3TestBase as RawProtocolV3TestBase, ReserveConfig, ReserveTokens} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
+import {IInitializableAdminUpgradeabilityProxy} from '../../src/interfaces/IInitializableAdminUpgradeabilityProxy.sol';
+import {ExtendedAggregatorV2V3Interface} from '../../src/interfaces/ExtendedAggregatorV2V3Interface.sol';
+import {ProxyHelpers} from 'aave-v3-origin/../tests/utils/ProxyHelpers.sol';
+import {CommonTestBase} from '../../src/CommonTestBase.sol';
+import {SnapshotHelpersV3} from './SnapshotHelpersV3.sol';
+import {ILegacyDefaultInterestRateStrategy} from '../../src/dependencies/ILegacyDefaultInterestRateStrategy.sol';
 
 struct LocalVars {
   IPoolDataProvider.TokenData[] reserves;
@@ -40,6 +40,12 @@ struct InterestStrategyValues {
 contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using SafeERC20 for IERC20;
+
+  SnapshotHelpersV3 public snapshotHelper;
+
+  function setUp() virtual public {
+    snapshotHelper = new SnapshotHelpersV3();
+  }
 
   /**
    * @dev runs the default test suite that should run on any proposal touching the aave protocol which includes:
@@ -116,6 +122,37 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
         require(configAfter[i].borrowCap <= configAfter[i].supplyCap, 'PL_SUPPLY_LT_BORROW');
       }
     }
+  }
+
+  /**
+   * @dev Generates a markdown compatible snapshot of the whole pool configuration into `/reports`.
+   * @param reportName filename suffix for the generated reports.
+   * @param pool the pool to be snapshot
+   * @return ReserveConfig[] list of configs
+   */
+  function createConfigurationSnapshot(
+    string memory reportName,
+    IPool pool
+  ) public override returns (ReserveConfig[] memory) {
+    return createConfigurationSnapshot(reportName, pool, true, true, true, true);
+  }
+
+  function createConfigurationSnapshot(
+    string memory reportName,
+    IPool pool,
+    bool reserveConfigs,
+    bool strategyConfigs,
+    bool eModeConigs,
+    bool poolConfigs
+  ) public override returns (ReserveConfig[] memory) {
+    return snapshotHelper.createConfigurationSnapshot(
+      reportName,
+      pool,
+      reserveConfigs,
+      strategyConfigs,
+      eModeConigs,
+      poolConfigs
+    );
   }
 
   /**
@@ -345,10 +382,50 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     vm.stopPrank();
   }
 
-  function getIsVirtualAccActive(
-    DataTypes.ReserveConfigurationMap memory configuration
-  ) external pure returns (bool) {
-    return configuration.getIsVirtualAccActive();
+  function _writeEModeConfigs(
+    string memory path,
+    ReserveConfig[] memory configs,
+    IPool pool
+  ) internal override {
+    return snapshotHelper.writeEModeConfigs(
+      path,
+      configs,
+      pool
+    );
+  }
+
+  function _writeStrategyConfigs(string memory path, ReserveConfig[] memory configs) internal override {
+    return snapshotHelper.writeStrategyConfigs(path, configs);
+  }
+
+  function _writeReserveConfigs(
+    string memory path,
+    ReserveConfig[] memory configs,
+    IPool pool
+  ) internal override {
+    return snapshotHelper.writeReserveConfigs(path, configs, pool);
+  }
+
+  function _writePoolConfiguration(string memory path, IPool pool) internal override {
+    return snapshotHelper.writePoolConfiguration(path, pool);
+  }
+
+  function _getReservesConfigs(IPool pool) internal view override returns (ReserveConfig[] memory) {
+    return snapshotHelper.getReservesConfigs(pool);
+  }
+
+  function _getStructReserveTokens(
+    IPoolDataProvider pdp,
+    address underlyingAddress
+  ) internal view override returns (ReserveTokens memory) {
+    return snapshotHelper.getStructReserveTokens(pdp, underlyingAddress);
+  }
+
+  function _getStructReserveConfig(
+    IPool pool,
+    IPoolDataProvider.TokenData memory reserve
+  ) internal view virtual returns (ReserveConfig memory) {
+    return snapshotHelper.getStructReserveConfig(pool, reserve);
   }
 
   function _logReserveConfig(ReserveConfig memory config) internal view {
@@ -382,97 +459,10 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     console.log('-----');
   }
 
-  function _writeStrategyConfigs(
-    string memory path,
-    ReserveConfig[] memory configs
-  ) internal override {
-    // keys for json stringification
-    string memory strategiesKey = 'stategies';
-    string memory content = '{}';
-    vm.serializeJson(strategiesKey, '{}');
-
-    for (uint256 i = 0; i < configs.length; i++) {
-      IDefaultInterestRateStrategyV2 strategyV2 = IDefaultInterestRateStrategyV2(
-        configs[i].interestRateStrategy
-      );
-      ILegacyDefaultInterestRateStrategy strategyV1 = ILegacyDefaultInterestRateStrategy(
-        configs[i].interestRateStrategy
-      );
-      address asset = configs[i].underlying;
-      string memory key = vm.toString(asset);
-      vm.serializeJson(key, '{}');
-      vm.serializeString(key, 'address', vm.toString(configs[i].interestRateStrategy));
-      string memory object;
-      try strategyV1.getVariableRateSlope1() {
-        vm.serializeString(
-          key,
-          'baseStableBorrowRate',
-          vm.toString(strategyV1.getBaseStableBorrowRate())
-        );
-        vm.serializeString(key, 'stableRateSlope1', vm.toString(strategyV1.getStableRateSlope1()));
-        vm.serializeString(key, 'stableRateSlope2', vm.toString(strategyV1.getStableRateSlope2()));
-        vm.serializeString(
-          key,
-          'baseVariableBorrowRate',
-          vm.toString(strategyV1.getBaseVariableBorrowRate())
-        );
-        vm.serializeString(
-          key,
-          'variableRateSlope1',
-          vm.toString(strategyV1.getVariableRateSlope1())
-        );
-        vm.serializeString(
-          key,
-          'variableRateSlope2',
-          vm.toString(strategyV1.getVariableRateSlope2())
-        );
-        vm.serializeString(
-          key,
-          'optimalStableToTotalDebtRatio',
-          vm.toString(strategyV1.OPTIMAL_STABLE_TO_TOTAL_DEBT_RATIO())
-        );
-        vm.serializeString(
-          key,
-          'maxExcessStableToTotalDebtRatio',
-          vm.toString(strategyV1.MAX_EXCESS_STABLE_TO_TOTAL_DEBT_RATIO())
-        );
-        vm.serializeString(key, 'optimalUsageRatio', vm.toString(strategyV1.OPTIMAL_USAGE_RATIO()));
-        object = vm.serializeString(
-          key,
-          'maxExcessUsageRatio',
-          vm.toString(strategyV1.MAX_EXCESS_USAGE_RATIO())
-        );
-      } catch {
-        vm.serializeString(
-          key,
-          'baseVariableBorrowRate',
-          vm.toString(strategyV2.getBaseVariableBorrowRate(asset))
-        );
-        vm.serializeString(
-          key,
-          'variableRateSlope1',
-          vm.toString(strategyV2.getVariableRateSlope1(asset))
-        );
-        vm.serializeString(
-          key,
-          'variableRateSlope2',
-          vm.toString(strategyV2.getVariableRateSlope2(asset))
-        );
-        vm.serializeString(
-          key,
-          'maxVariableBorrowRate',
-          vm.toString(strategyV2.getMaxVariableBorrowRate(asset))
-        );
-        object = vm.serializeString(
-          key,
-          'optimalUsageRatio',
-          vm.toString(strategyV2.getOptimalUsageRatio(asset))
-        );
-      }
-      content = vm.serializeString(strategiesKey, key, object);
-    }
-    string memory output = vm.serializeString('root', 'strategies', content);
-    vm.writeJson(output, path);
+  function getIsVirtualAccActive(
+    DataTypes.ReserveConfigurationMap memory configuration
+  ) external pure returns (bool) {
+    return configuration.getIsVirtualAccActive();
   }
 
   // TODO: deprecated, remove it later
