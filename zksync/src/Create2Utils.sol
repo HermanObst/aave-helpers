@@ -9,12 +9,12 @@ library Create2Utils {
 
   // @dev the bytecodeHash is the unsanitized input we get via `type(Contract).creationCode`
   function create2Deploy(bytes32 salt, bytes memory bytecodeHash, bytes memory arguments) internal returns (address) {
-    create2Deploy(salt, sliceBytes(bytecodeHash, 36, 32), arguments);
+    return create2Deploy(salt, bytes32(sliceBytes(bytecodeHash, 36, 32)), arguments);
   }
 
   // @dev the bytecodeHash is the unsanitized input we get via `type(Contract).creationCode`
   function create2Deploy(bytes32 salt, bytes memory bytecodeHash) internal returns (address) {
-    create2Deploy(salt, sliceBytes(bytecodeHash, 36, 32));
+    return create2Deploy(salt, bytes32(sliceBytes(bytecodeHash, 36, 32)));
   }
 
   function create2Deploy(
