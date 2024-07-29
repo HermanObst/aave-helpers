@@ -19,6 +19,7 @@ import {GovernanceV3Base} from 'aave-address-book/GovernanceV3Base.sol';
 import {GovernanceV3Arbitrum} from 'aave-address-book/GovernanceV3Arbitrum.sol';
 import {GovernanceV3Gnosis} from 'aave-address-book/GovernanceV3Gnosis.sol';
 import {GovernanceV3Scroll} from 'aave-address-book/GovernanceV3Scroll.sol';
+import {GovernanceV3ZkSync} from 'aave-address-book/GovernanceV3ZkSync.sol';
 import {IBaseAdapter} from 'aave-address-book/common/IBaseAdapter.sol';
 
 contract ADITestBase is Test {
@@ -597,6 +598,7 @@ contract ADITestBase is Test {
       chainIds[7] = ChainIds.METIS;
       chainIds[8] = ChainIds.BASE;
       chainIds[9] = ChainIds.SCROLL;
+      chainIds[10] = ChainIds.ZK_SYNC;
 
       return chainIds;
     } else if (chainId == ChainIds.POLYGON) {
@@ -672,6 +674,8 @@ contract ADITestBase is Test {
       return GovernanceV3Gnosis.CROSS_CHAIN_CONTROLLER;
     } else if (chainId == ChainIds.SCROLL) {
       return GovernanceV3Scroll.CROSS_CHAIN_CONTROLLER;
+    }else if (chainId == ChainIds.ZK_SYNC) {
+      return GovernanceV3ZkSync.CROSS_CHAIN_CONTROLLER;
     }
     revert();
   }
