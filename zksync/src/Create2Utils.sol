@@ -7,10 +7,12 @@ library Create2Utils {
   // https://github.com/matter-labs/era-contracts/blob/main/system-contracts/contracts/Create2Factory.sol
   address public constant CREATE2_FACTORY = 0x0000000000000000000000000000000000010000;
 
+  // @dev the bytecodeHash is the unsanitized input we get via `type(Contract).creationCode`
   function create2Deploy(bytes32 salt, bytes memory bytecodeHash, bytes memory arguments) internal returns (address) {
     create2Deploy(salt, sliceBytes(bytecodeHash, 36, 32), arguments);
   }
 
+  // @dev the bytecodeHash is the unsanitized input we get via `type(Contract).creationCode`
   function create2Deploy(bytes32 salt, bytes memory bytecodeHash) internal returns (address) {
     create2Deploy(salt, sliceBytes(bytecodeHash, 36, 32));
   }
