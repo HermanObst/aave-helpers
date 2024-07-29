@@ -674,7 +674,7 @@ contract ADITestBase is Test {
       return GovernanceV3Gnosis.CROSS_CHAIN_CONTROLLER;
     } else if (chainId == ChainIds.SCROLL) {
       return GovernanceV3Scroll.CROSS_CHAIN_CONTROLLER;
-    }else if (chainId == ChainIds.ZK_SYNC) {
+    } else if (chainId == ChainIds.ZK_SYNC) {
       return GovernanceV3ZkSync.CROSS_CHAIN_CONTROLLER;
     }
     revert();
