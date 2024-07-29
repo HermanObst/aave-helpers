@@ -765,6 +765,8 @@ library GovV3Helpers {
       return GovernanceV3Scroll.PAYLOADS_CONTROLLER;
     } else if (chainId == ChainIds.ZK_EVM) {
       return GovernanceV3PolygonZkEvm.PAYLOADS_CONTROLLER;
+    } else if (chainId == ChainIds.ZKSYNC) {
+      return 0x2E79349c3F5e4751E87b966812C9E65E805996F1; // TODO: add using address-book
     }
 
     revert CannotFindPayloadsController();
