@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {ICreate2Factory} from './interfaces/ICreate2Factory.sol';
 
-library Create2Utils {
+library Create2UtilsZkSync {
   // https://github.com/matter-labs/era-contracts/blob/main/system-contracts/contracts/Create2Factory.sol
   address public constant CREATE2_FACTORY = 0x0000000000000000000000000000000000010000;
 

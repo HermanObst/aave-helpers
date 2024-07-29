@@ -81,7 +81,7 @@ abstract contract PolygonZkEvmScript is WithChainIdValidation {
 }
 
 abstract contract ZkSyncScript is WithChainIdValidation {
-  constructor() WithChainIdValidation(ChainIds.ZK_SYNC) {}
+  constructor() WithChainIdValidation(ChainIds.ZKSYNC) {}
 }
 
 abstract contract SepoliaScript is WithChainIdValidation {
