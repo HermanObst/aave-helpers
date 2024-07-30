@@ -219,7 +219,7 @@ library GovV3Helpers {
   function predictDeterministicAddressZkSync(
     bytes32 bytecodeHash,
     bytes memory arguments
-  ) internal returns (address) {
+  ) internal pure returns (address) {
     return Create2UtilsZkSync.computeCreate2Address('v1', bytecodeHash, arguments);
   }
 
