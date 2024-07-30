@@ -3,10 +3,11 @@ pragma solidity ^0.8.0;
 
 import {IPool, DataTypes} from 'aave-address-book/AaveV3.sol';
 import {ICollector} from 'aave-address-book/common/ICollector.sol';
+import {ILendingPool, DataTypes as V2DataTypes} from 'aave-address-book/AaveV2.sol';
 import {IERC20} from 'solidity-utils/contracts/oz-common/interfaces/IERC20.sol';
 import {SafeERC20} from 'solidity-utils/contracts/oz-common/SafeERC20.sol';
+
 import {AaveSwapper} from './swaps/AaveSwapper.sol';
-import {ILendingPool, DataTypes as V2DataTypes} from 'aave-address-book/AaveV2.sol';
 
 /**
  * @title CollectorUtils
