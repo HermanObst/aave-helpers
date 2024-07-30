@@ -19,6 +19,7 @@ import {GovernanceV3BNB} from 'aave-address-book/GovernanceV3BNB.sol';
 import {GovernanceV3Gnosis} from 'aave-address-book/GovernanceV3Gnosis.sol';
 import {GovernanceV3Scroll} from 'aave-address-book/GovernanceV3Scroll.sol';
 import {GovernanceV3PolygonZkEvm} from 'aave-address-book/GovernanceV3PolygonZkEvm.sol';
+import {GovernanceV3ZkSync} from 'aave-address-book/GovernanceV3ZkSync.sol';
 import {MiscEthereum} from 'aave-address-book/MiscEthereum.sol';
 import {Address} from 'solidity-utils/contracts/oz-common/Address.sol';
 import {StorageHelpers} from './StorageHelpers.sol';
@@ -766,7 +767,7 @@ library GovV3Helpers {
     } else if (chainId == ChainIds.ZK_EVM) {
       return GovernanceV3PolygonZkEvm.PAYLOADS_CONTROLLER;
     } else if (chainId == ChainIds.ZKSYNC) {
-      return 0x2E79349c3F5e4751E87b966812C9E65E805996F1; // TODO: add using address-book
+      return GovernanceV3ZkSync.PAYLOADS_CONTROLLER;
     }
 
     revert CannotFindPayloadsController();
