@@ -88,11 +88,11 @@ library CollectorUtils {
    * @param collector aave collector
    * @param input withdraw parameters wrapped as IOInput
    */
-  function withdrawFromV3(ICollector collector, IOInput memory input) internal {
+  function withdrawFromV3(ICollector collector, IOInput memory input) internal returns (uint256) {
     DataTypes.ReserveDataLegacy memory reserveData = IPool(input.pool).getReserveData(
       input.underlying
     );
-    __withdraw(collector, input, reserveData.aTokenAddress);
+    return __withdraw(collector, input, reserveData.aTokenAddress);
   }
 
   /**
@@ -100,11 +100,11 @@ library CollectorUtils {
    * @param collector aave collector
    * @param input withdraw parameters wrapped as IOInput
    */
-  function withdrawFromV2(ICollector collector, IOInput memory input) internal {
+  function withdrawFromV2(ICollector collector, IOInput memory input) internal returns (uint256) {
     V2DataTypes.ReserveData memory reserveData = ILendingPool(input.pool).getReserveData(
       input.underlying
     );
-    __withdraw(collector, input, reserveData.aTokenAddress);
+    return __withdraw(collector, input, reserveData.aTokenAddress);
   }
 
   /**
@@ -167,7 +167,11 @@ library CollectorUtils {
    * @param input withdraw parameters wrapped as IOInput
    * @param aTokenAddress aToken address for the corresponding reserve in the pool
    */
-  function __withdraw(ICollector collector, IOInput memory input, address aTokenAddress) internal {
+  function __withdraw(
+    ICollector collector,
+    IOInput memory input,
+    address aTokenAddress
+  ) internal returns (uint256) {
     if (input.amount == 0) {
       revert InvalidZeroAmount();
     }
@@ -183,5 +187,7 @@ library CollectorUtils {
 
     // @dev withdrawal interfaces of v2 and v3 is the same, so we use any
     IPool(input.pool).withdraw(input.underlying, input.amount, address(collector));
+
+    return input.amount;
   }
 }
