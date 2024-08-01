@@ -9,7 +9,7 @@ library ChainIds {
   uint256 internal constant BNB = 56;
   uint256 internal constant POLYGON = 137;
   uint256 internal constant FANTOM = 250;
-  uint256 internal constant ZKSYNC = 324;
+  uint256 internal constant ZK_SYNC = 324;
   uint256 internal constant METIS = 1088;
   uint256 internal constant ZK_EVM = 1101;
   uint256 internal constant BASE = 8453;
@@ -56,7 +56,7 @@ library ChainHelpers {
       newFork = vm.createSelectFork(vm.rpcUrl('polygon'));
     } else if (chainId == ChainIds.FANTOM) {
       newFork = vm.createSelectFork(vm.rpcUrl('fantom'));
-    } else if (chainId == ChainIds.ZKSYNC) {
+    } else if (chainId == ChainIds.ZK_SYNC) {
       newFork = vm.createSelectFork(vm.rpcUrl('zksync'));
     } else if (chainId == ChainIds.METIS) {
       newFork = vm.createSelectFork(vm.rpcUrl('metis'));

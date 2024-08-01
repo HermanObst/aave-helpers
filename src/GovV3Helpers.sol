@@ -672,7 +672,7 @@ library GovV3Helpers {
     Vm vm,
     IPayloadsControllerCore.ExecutionAction[] memory actions
   ) internal returns (PayloadsControllerUtils.Payload memory) {
-    return _buildPayload(vm, ChainIds.ZKSYNC, actions);
+    return _buildPayload(vm, ChainIds.ZK_SYNC, actions);
   }
 
   /**
@@ -684,7 +684,7 @@ library GovV3Helpers {
     Vm vm,
     IPayloadsControllerCore.ExecutionAction memory action
   ) internal returns (PayloadsControllerUtils.Payload memory) {
-    return _buildPayload(vm, ChainIds.ZKSYNC, action);
+    return _buildPayload(vm, ChainIds.ZK_SYNC, action);
   }
 
   /**
@@ -766,7 +766,7 @@ library GovV3Helpers {
       return GovernanceV3Scroll.PAYLOADS_CONTROLLER;
     } else if (chainId == ChainIds.ZK_EVM) {
       return GovernanceV3PolygonZkEvm.PAYLOADS_CONTROLLER;
-    } else if (chainId == ChainIds.ZKSYNC) {
+    } else if (chainId == ChainIds.ZK_SYNC) {
       return GovernanceV3ZkSync.PAYLOADS_CONTROLLER;
     }
 
