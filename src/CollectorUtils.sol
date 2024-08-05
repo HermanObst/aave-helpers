@@ -145,7 +145,7 @@ library CollectorUtils {
       revert InvalidZeroAmount();
     }
     if (
-      IChainlinkAggregator(input.fromUnderlyingPriceFeed).decimals() ==
+      IChainlinkAggregator(input.fromUnderlyingPriceFeed).decimals() !=
       IChainlinkAggregator(input.toUnderlyingPriceFeed).decimals()
     ) {
       revert PriceOracleDecimalsMismatch();
