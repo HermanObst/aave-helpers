@@ -45,6 +45,8 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
 
   function setUp() virtual public {
     snapshotHelper = new SnapshotHelpersV3();
+    vm.makePersistent(address(snapshotHelper));
+    vm.allowCheatcodes(address(snapshotHelper));
   }
 
   /**
@@ -145,6 +147,9 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     bool eModeConigs,
     bool poolConfigs
   ) public override returns (ReserveConfig[] memory) {
+    (bool success, ) = address(vm).call(
+      abi.encodeWithSignature("zkVm(bool)", false)
+    );
     return snapshotHelper.createConfigurationSnapshot(
       reportName,
       pool,
