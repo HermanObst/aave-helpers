@@ -16,9 +16,26 @@ import {IDefaultInterestRateStrategyV2} from 'aave-v3-core/contracts/interfaces/
 import {ReserveConfig, ReserveTokens, DataTypes} from 'aave-v3-origin/../tests/utils/ProtocolV3TestBase.sol';
 import {ProtocolV3TestBase as TestBase, LocalVars} from './ProtocolV3TestBase.sol';
 import {ILegacyDefaultInterestRateStrategy} from '../../src/dependencies/ILegacyDefaultInterestRateStrategy.sol';
+import {DiffUtils} from 'aave-v3-origin/../tests/utils/DiffUtils.sol';
 
-contract SnapshotHelpersV3 is CommonTestBase {
+contract SnapshotHelpersV3 is CommonTestBase, DiffUtils {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+
+  function generateDiffReport(
+    string memory reportName,
+    IPool pool,
+    address payload
+  ) public {
+    string memory beforeString = string(abi.encodePacked(reportName, '_before'));
+    createConfigurationSnapshot(beforeString, pool, true, true, true, true);
+
+    executePayload(vm, payload);
+
+    string memory afterString = string(abi.encodePacked(reportName, '_after'));
+    createConfigurationSnapshot(afterString, pool, true, true, true, true);
+
+    diffReports(beforeString, afterString);
+  }
 
   function createConfigurationSnapshot(
     string memory reportName,

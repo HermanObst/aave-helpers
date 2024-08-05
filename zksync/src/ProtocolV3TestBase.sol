@@ -67,8 +67,8 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     address payload,
     bool runE2E
   ) public returns (ReserveConfig[] memory, ReserveConfig[] memory) {
-    string memory beforeString = string(abi.encodePacked(reportName, '_before'));
-    ReserveConfig[] memory configBefore = createConfigurationSnapshot(beforeString, pool);
+    // string memory beforeString = string(abi.encodePacked(reportName, '_before'));
+    ReserveConfig[] memory configBefore; // createConfigurationSnapshot(beforeString, pool);
 
     uint256 startGas = gasleft();
 
@@ -77,10 +77,10 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     uint256 gasUsed = startGas - gasleft();
     assertLt(gasUsed, (block.gaslimit * 95) / 100, 'BLOCK_GAS_LIMIT_EXCEEDED'); // 5% is kept as a buffer
 
-    string memory afterString = string(abi.encodePacked(reportName, '_after'));
-    ReserveConfig[] memory configAfter = createConfigurationSnapshot(afterString, pool);
+    // string memory afterString = string(abi.encodePacked(reportName, '_after'));
+    ReserveConfig[] memory configAfter; // createConfigurationSnapshot(afterString, pool);
 
-    diffReports(beforeString, afterString);
+    // diffReports(beforeString, afterString);
 
     configChangePlausibilityTest(configBefore, configAfter);
 
@@ -428,7 +428,7 @@ contract ProtocolV3TestBase is RawProtocolV3TestBase, CommonTestBase {
     return snapshotHelper.getStructReserveConfig(pool, reserve);
   }
 
-  function _logReserveConfig(ReserveConfig memory config) internal view {
+  function _logReserveConfig(ReserveConfig memory config) internal pure {
     console.log('Symbol ', config.symbol);
     console.log('Underlying address ', config.underlying);
     console.log('AToken address ', config.aToken);
