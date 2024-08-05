@@ -30,6 +30,9 @@ contract SnapshotHelpersV3 is CommonTestBase {
   ) public returns (ReserveConfig[] memory) {
     string memory path = string(abi.encodePacked('./reports/', reportName, '.json'));
     // overwrite with empty json to later be extended
+    (bool success, ) = address(vm).call(
+           abi.encodeWithSignature("zkVm(bool)", true)
+       );
     vm.writeFile(
       path,
       '{ "eModes": {}, "reserves": {}, "strategies": {}, "poolConfiguration": {} }'
@@ -40,7 +43,6 @@ contract SnapshotHelpersV3 is CommonTestBase {
     if (strategyConfigs) writeStrategyConfigs(path, configs);
     if (eModeConigs) writeEModeConfigs(path, configs, pool);
     if (poolConfigs) writePoolConfiguration(path, pool);
-
     return configs;
   }
 
