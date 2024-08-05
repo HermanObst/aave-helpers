@@ -8,6 +8,7 @@ import {IERC20} from 'solidity-utils/contracts/oz-common/interfaces/IERC20.sol';
 import {SafeERC20} from 'solidity-utils/contracts/oz-common/SafeERC20.sol';
 
 import {AaveSwapper} from './swaps/AaveSwapper.sol';
+import {IChainlinkAggregator} from './interfaces/IChainlinkAggregator.sol';
 
 /**
  * @title CollectorUtils
@@ -16,6 +17,7 @@ import {AaveSwapper} from './swaps/AaveSwapper.sol';
  */
 library CollectorUtils {
   error InvalidZeroAmount();
+  error PriceOracleDecimalsMismatch();
 
   /* @notice Object with deposit or withdrawal params
    * @param pool Aave V3 or V2 (only in case of withdraw) pool
@@ -141,6 +143,12 @@ library CollectorUtils {
   function swap(ICollector collector, address swapper, SwapInput memory input) internal {
     if (input.amount == 0) {
       revert InvalidZeroAmount();
+    }
+    if (
+      IChainlinkAggregator(input.fromUnderlyingPriceFeed).decimals() ==
+      IChainlinkAggregator(input.toUnderlyingPriceFeed).decimals()
+    ) {
+      revert PriceOracleDecimalsMismatch();
     }
 
     if (input.amount == type(uint256).max) {
