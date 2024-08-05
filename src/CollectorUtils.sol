@@ -195,9 +195,6 @@ library CollectorUtils {
       revert InvalidZeroAmount();
     }
 
-    if (input.amount == type(uint256).max) {
-      input.amount = IERC20(aTokenAddress).balanceOf(address(collector));
-    }
     collector.transfer(aTokenAddress, address(this), input.amount);
     // @dev withdrawal interfaces of v2 and v3 is the same, so we use any
     IPool(input.pool).withdraw(input.underlying, type(uint256).max, address(collector));
